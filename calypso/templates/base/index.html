@@ -1,0 +1,136 @@
+%if True or (h.calypso.users.UserSession.user != None and h.calypso.users.UserSession.user.verify()):
+
+<!DOCTYPE html >
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+  <meta charset="utf-8">  </meta>
+  <title>${self.title()}</title>
+     <link rel="stylesheet" href="/lib/farbtastic/farbtastic.css" type="text/css" media="all" /> 
+    <link rel="stylesheet" href="/css/Calypso.css" type="text/css" media="all" /> 
+
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+   <title>Calypso</title>
+   <link rel="stylesheet" href="/css/Calypso.css" type="text/css" media="all" /> 
+  %if c.theme!="":  
+  <link rel="stylesheet" href="/css/${c.theme}/jquery-ui-1.8.4.custom.css" type="text/css" media="all" /> 
+  %else:
+  <link rel="stylesheet" href="/css/default/jquery-ui-1.8.4.custom.css" type="text/css" media="all" /> 
+  %endif
+
+
+    ${self.head()}
+     <!-- JQuery : making javascript easy and almost fun ;-) -->
+      <script src="/lib/jquery-1.4.2.min.js" type="text/javascript"></script> 
+      <script src="/lib/jquery-ui-1.8.4.custom.min.js" type="text/javascript"></script> 
+      <script src="/lib/jquery.dropdown.js" type="text/javascript"></script>
+<script type="text/javascript" src="/lib/routing.js"></script>
+<script type="text/javascript" src="/lib/tlm/telemetryStream.js"></script>
+<script type="text/javascript" src="/lib/tlm/init.js"></script>
+
+
+    <script type='text/javascript' src='http://www.google.com/jsapi'></script>
+ <script>
+	google.load('visualization','1',{packages:['gauge','areachart','linechart','columnchart','scatterchart','piechart']});
+</script>
+</head>
+
+<body >
+ 
+
+<navigation>
+    ${self.tabs()}
+    ${self.menu()}
+    ${self.heading()}
+    ${self.breadcrumbs()}
+</navigation>
+<section style='width:100%;height:100%'>
+    ${next.body()}
+ 
+</section>
+<footer>
+    ${self.footer()}
+</footer>
+
+<script>
+$(document).ready(function (){
+    ${c.clientscript}
+    });
+</script>
+</body>
+</html>
+
+<%def name="title()">Calypso</%def>
+
+<%def name="head()">
+<link rel='stylesheet' type='text/css' href='/css/Calypso.css' />
+</%def>
+
+<%def name="header()"></%def>
+
+<%def name="tabs()"></%def>
+
+<%def name="menu()"></%def>
+
+<%def name="heading()">
+
+  <div  id='main_menubar' class="ui-state-default" style='padding: 5px 0px 5px 0px'>
+       <!-- Titlebar to identify what the user is currently editing -->
+      <h2 class='ui-state-active title_bar' style='padding:0;margin:0;width:90%'>
+       Welcome, ${c.user}!  Select an acton below.
+      
+      <select  style='float:right' id='theme_selection'>
+        <option value='default' >Default</option>
+        <option value='tartan'>Tartan</option>
+        <option value='smoothness2'>Smoothness</option>
+        <option value='obsidian' >Obsidian</option>
+        <option value='goldenwheat'>GoldenWheat</option>
+        <option value='buckeye'>Buckeye</option>
+      </select><label style='float:right'>Theme:</label>
+       </h2>
+      
+   <script>
+  String.prototype.startsWith = function(str) 
+  {return (this.match("^"+str)==str)}
+  $('#theme_selection').change(function(){
+      hrefs=location.href.split('&theme');
+      address=location.href.split('?');
+      if (address[0]==location.href || address[1].startsWith('theme')) {
+          location.href=address[0]+"?theme=" + $(this).val();
+      } else{
+         hrefnew=hrefs[0];           
+         location.href=hrefnew + '&theme=' + $(this).val();
+      }
+ });
+
+  </script>
+  </div>
+</%def>
+
+<%def name="breadcrumbs()">
+  <hr/>
+%if c.breadcrumbs:
+  <div id='breadcrumbs'>
+ <div style='display:block'>
+% for item in c.breadcrumbs:
+  % if item.has_key('url'):
+          &nbsp;&gt;&gt;&nbsp;<a href='${item["url"]}'>${item['text']}</a>
+  % else:
+          &nbsp&gt;&gt;&nbsp;${item['text']}
+  % endif
+% endfor
+           <a href='${h.url_for(controller='tutorial', action='tutor', primary_controller='administration', primary_action='view',id=1)}'>Tutorial</a>::
+<a href='${h.url_for(controller='login',action='logout')}'>Logout</a>
+       
+         </div>
+  </div>
+  %endif
+  
+  
+</%def>
+
+
+<%def name="footer()"><p><a href="#top">Top ^</a></p></%def>
+% else:
+<%include file="/base/login.html"/>
+%endif

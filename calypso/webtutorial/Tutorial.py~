@@ -1,0 +1,17 @@
+class Tutorial:
+
+    class Item:
+
+        def __init__(self, id, text):
+            self.id=id
+            self.text = text
+            self.js = '$("id").effect("highlight",{},3000);"
+            
+        def speak(self):
+            
+
+    def __init__(self):
+        self.items = []
+
+    def add(self,id, text):
+        self.itema.append( 

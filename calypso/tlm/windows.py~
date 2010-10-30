@@ -1,0 +1,329 @@
+import sys
+from calypso.model.meta import Session as sqlsession
+from calypso.model.meta import metadata
+from calypso.tlm.tiles import *
+from calypso.tlm.properties import *
+from pylons import request, response, session, tmpl_context as c
+from calypso.lib.base import render
+
+class TelemetryWindowModel(object):
+
+    class DAO(object):
+        table=None
+
+        def __init__(self, user, name, displayname):
+            self.name = name
+            self.user = user
+            self.display=displayname
+            sqlsession.add(self)            
+            sqlsession.commit()
+            
+    def __init__(self, user, name, displayname):
+        daos= sqlsession.query(TelemetryWindowModel.DAO).filter_by(user=user,display=displayname,  name=name).all()
+        if len(daos)>0:
+            self.dao = daos[0]
+        else:
+            self.dao = TelemetryWindowModel.DAO(user=user,name=name, displayname=displayname)
+        index=0
+        
+    def get_name(self):
+        return self.dao.name
+        
+    def set_name(self, name):
+        self.dao.name = name
+        sqlsession.add(self.dao)       
+        sqlsession.commit()
+
+    def copy_to(self, displayname):
+        sqlsession.commit()
+        name=self.dao.name
+        user=self.dao.user
+        self.dao=None
+        self.dao=TelemetryWindowModel(user = user, name=name, displayname=displayname).dao
+        sqlsession.commit()
+   
+    def set_parent(self, displayname):
+        self.dao.display=displayname
+        
+    def delete(self):  
+        sqlsession.delete(self.dao)
+        sqlsession.commit()        
+
+
+  
+    @staticmethod
+    def get_models(display, user):
+        daos=  sqlsession.query(TelemetryWindowModel.DAO).filter_by(user=user, display=display.get_name()).all()
+        models=[]
+        for dao in daos:
+            models.append(TelemetryWindowModel(user=user, name=dao.name, displayname=display.get_name()))
+        return models
+        
+
+
+
+
+class TelemetryWindow(object):
+
+    class PlacedTile(object):
+
+        def __init__(self, tile, properties):
+            self.tile=tile
+            self.properties=properties
+        
+        def get_name(self):
+            return self.tile.get_name()
+        
+    def __init__(self,user, name, display):
+        if display.get_name()=='':
+            raise Exception('empty display name')
+        self.parent=display
+        self._model = TelemetryWindowModel(user=user, name=name, displayname=display.get_name())
+        self.tiles=[]
+        tile_models = TileModel.get_models( user=user, displayname=display.get_name(), parentname=self.get_name())
+        for model in tile_models:
+            charttype=model.get_type()
+            try:
+                properties = PROPERTIES_MAP[charttype](model.get_name(),user, self, display)
+            except:
+                properties =  PROPERTIES_MAP['table'](model.get_name(),user, self, display)
+            tile  = Tile(name=model.get_name(), user=user, parent=self, display=display, type=model.get_type())
+            self.place_tile( tile, properties)
+            
+    def delete(self):
+        self._model.delete()
+        for row in self.tiles:
+            for tile in row:
+                tile.properties.delete()
+                tile.tile.delete()
+                del tile.properties
+                del tile.tile
+        self.tiles=[]
+
+    def get_name(self):
+        return self._model.get_name()
+
+    def set_name(self,name):
+        for row in self.tiles:
+            for tile in row:
+                if tile!=None: tile.tile.set_parent(name)
+        self._model.set_name(name)
+
+    def copy_to(self, displayname):
+        for row in self.tiles:
+            for tile in row:
+                if tile!=None: tile.tile.copy_to(displayname=displayname)
+                if tile!=None: tile.properties.copy_to(displayname=displayname)
+        self._model.copy_to(displayname=displayname)
+        
+    def set_display(self, display):      
+        self._model.set_parent(display.get_name())
+        sqlsession.commit()     
+        for row in self.tiles:
+            for tile in row:
+                if tile!=None: 
+                    tile.tile.set_display(display)
+                    tile.properties.set_display(display)
+        
+    def has_tile(self, name):
+        for row in self.tiles:
+            for tile in row:
+                if tile != None and tile.tile!=None and tile.tile.get_name()==name:
+                    return True
+        return False
+   
+
+    def row_span(self, row):
+        try:
+            max=1
+            tilerow=self.tiles[row]
+            for tile in tilerow:
+                if tile.properties.row_span()>max:
+                    max=int(tile.properties.row_span())
+            return max
+        except:
+            return 1
+        
+    def reduce_tilecolspan(self, x_pos, y_pos):
+        try:
+            properties=self.tiles[y_pos][x_pos].properties
+            if properties.col_span() > 1:
+                properties.col_span.set_value( int(properties.col_span())-1)
+        except:
+            pass
+
+    def expand_tilecolspan(self, x_pos, y_pos):
+        try:
+            properties=self.tiles[y_pos][x_pos].properties
+            properties.col_span.set_value( int( properties.col_span())+1)
+            
+        except:
+            import traceback
+            traceback.print_exception(sys.exc_info()[0], sys.exc_info()[1], sys.exc_info()[2])
+            pass
+
+    def reduce_tilerowspan(self, x_pos, y_pos):
+        try:
+            properties=self.tiles[y_pos][x_pos].properties
+            if properties.row_span() > 1:
+                properties.row_span.set_value( int(properties.row_span()) - 1)
+        except:
+            pass
+
+    def expand_tilerowspan(self, x_pos, y_pos):
+        try:
+            properties=self.tiles[y_pos][x_pos].properties
+            properties.row_span.set_value(int(properties.row_span()) + 1)
+        except:
+            pass
+
+
+
+    def place_tile( self, tile, properties):
+        x_pos = int(properties.x_pos())
+        y_pos = int(properties.y_pos())
+        while y_pos >= len(self.tiles):
+            self.tiles.append([])
+        while x_pos >= len(self.tiles[y_pos]):
+            self.tiles[y_pos].append(None)
+        if self.tiles[y_pos][x_pos] != None:
+            if tile==self.tiles[y_pos][x_pos].tile:
+                return
+            else:
+                self.tiles[y_pos][x_pos].properties.delete()
+                self.tiles[y_pos][x_pos].tile.delete()
+                raise Exception('Attempt to place tile in occupied slot %d %d'%(x_pos, y_pos))
+        properties.selected=False
+        self.tiles[y_pos][x_pos]= TelemetryWindow.PlacedTile(tile, properties)
+             
+
+    def remove_row(self, row):
+        for y_pos in range(row,len(self.tiles)):
+            if y_pos==len(self.tiles)-1:
+                del self.tiles[y_pos]
+                break
+            self.tiles[y_pos]=self.tiles[y_pos+1]
+            for tile in self.tiles[y_pos]:
+                if tile!=None:
+                    tile.properties.y_pos.set_value(y_pos)
+
+    def row_is_empty(self, row):
+        for tile in self.tiles[row]:
+            if tile!=None: return False
+        return True
+
+    def remove_col(self, col):
+        print "REMOVING COL"
+        for rowindex in range(len(self.tiles)):
+            row=self.tiles[rowindex]
+            for colindex in range(col, len(row)):
+                if colindex==len(row)-1:
+                    del self.tiles[rowindex][colindex]
+                    break
+                self.tiles[rowindex][colindex]=self.tiles[rowindex][colindex+1]
+                self.tiles[rowindex][colindex].properties.x_pos.set_value(colindex)
+                
+    def col_is_empty(self, col):
+        print str(self.tiles)
+        for row in self.tiles:
+            if col < len(row) and row[col]!=None: return False;
+        return True;
+    
+    def reduce(self):
+        maxcols=0
+        for rowindex in range(len(self.tiles)):
+            if rowindex >= len(self.tiles): break
+            if self.row_is_empty(rowindex): self.remove_row( rowindex)
+            if rowindex < len(self.tiles) and len(self.tiles[rowindex])>maxcols:
+                maxcols=len(self.tiles[rowindex])
+        for col in range(0, maxcols):
+            if col >= maxcols: break
+            if self.col_is_empty(col):
+               self.remove_col(col)
+               maxcols-=1
+            
+                            
+    def remove_tile(self, x_pos, y_pos):
+        try:
+            self.tiles[y_pos][x_pos].properties.delete()
+            self.tiles[y_pos][x_pos].tile.delete()
+            del self.tiles[y_pos][x_pos].properties
+            del self.tiles[y_pos][x_pos].tile
+            self.tiles[y_pos][x_pos]=None
+        except:
+            import traceback
+            traceback.print_exception(sys.exc_info()[0], sys.exc_info()[1], sys.exc_info()[2])
+            pass
+        self.reduce()
+        
+    def select_tile(self, x_pos, y_pos):
+        return_tile=None
+        for pos_y in range(len(self.tiles)):
+            row=self.tiles[pos_y]
+            for pos_x in range(len(row)):
+                selected=((x_pos==pos_x) and (y_pos==pos_y))
+                if selected:
+                    self.tiles[pos_y][pos_x].properties.selected= True
+                    return_tile=self.tiles[pos_y][pos_x]
+                else:
+                    if self.tiles[pos_y][pos_x]!=None:
+                        self.tiles[pos_y][pos_x].properties.selected=False
+        return  return_tile
+
+
+    def move_tile(self, from_x_pos, from_y_pos, to_x_pos, to_y_pos):
+        if (from_x_pos==to_x_pos) and (from_y_pos==to_y_pos):
+            return;
+        if (to_y_pos<len(self.tiles)) and (to_x_pos < len(self.tiles[to_y_pos])):
+            to_tile=self.tiles[to_y_pos][to_x_pos]
+        else:
+            to_tile=None
+        tile=self.tiles[from_y_pos][from_x_pos]
+        properties=self.tiles[from_y_pos][from_x_pos].properties
+        self.tiles[from_y_pos][from_x_pos]=None
+        properties.x_pos.set_value(to_x_pos)
+        properties.y_pos.set_value(to_y_pos)
+        
+        if (to_tile!=None):
+            self.tiles[from_y_pos][from_x_pos]=to_tile
+            to_tile.properties.x_pos.set_value(from_x_pos)
+            to_tile.properties.y_pos.set_value(from_y_pos)  
+            self.tiles[to_y_pos][to_x_pos]=tile
+        else:          
+            self.place_tile(tile.tile, properties)        
+        self.reduce()
+
+    def get_tile(self):
+        return self.tiles[y_pos][x_pos]
+        
+    def render_html(self,for_editing=False, format=None):
+        sqlsession.flush()
+        c.name          = self.get_name()
+        c.tiles         = self.tiles
+        if format==None:
+            c.format        = calypso.Session.session.get_display().format
+        else:
+            c.format=format
+        if for_editing:
+            return render('/tlm/develop/Visualization.html')
+        else:
+            return render ('/tlm/telemetrydisplay.html')
+
+    @staticmethod
+    def get_tabs(display, user):
+        models=TelemetryWindowModel.get_models(user=user, display=display)
+        windows=[]
+        for model in models:
+            windows.append(TelemetryWindow( user=user, name=model.get_name(), display=display))
+        return windows
+
+
+
+
+TelemetryWindowModel.DAO.table=sqlalchemy.Table("TlmWindows", metadata,
+                                                Column('user', String(40), primary_key=True),
+                                                Column('display',String(80), ForeignKey("TlmDisplays.name"), primary_key=True),
+                                                Column('name',String(80), primary_key=True))
+
+"""map tables to database"""
+sqlalchemy.orm.mapper(TelemetryWindowModel.DAO, TelemetryWindowModel.DAO.table)

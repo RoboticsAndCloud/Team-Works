@@ -1,0 +1,573 @@
+<%inherit file="/base/interaction.html"/>
+<%def name="breadcrumbs()">
+</%def>
+<%def name="heading()">
+
+<div class="menuBar">
+<a class="menuButton" href="javascript:active=($('#display_menu').css('display')=='none');$('.menu').css('display','none');if(active)$('#display_menu').css('display','block');else $('#display_menu').css('display','none');menu_controller.setmenutimeout()">Display</a>
+<div class="menu" id='display_menu' style='display:none;position:absolute;z-index:3600'>
+<a class="menuItem" href="javascript:menu_controller.new_display();">New</a>
+<a class="menuItem" href="javascript:menu_controller.open_display();">Open</a>
+<a class="menuItem" href="#"><hr/></a>
+<a class="menuItem" href="javascript:menu_controller.save_display_as();">Save As ...</a>
+<a class="menuItem" href="javascript:menu_controller.delete_display();">Delete</a>
+</div>
+<a class="menuButton" href="javascript:active=($('#exit_menu').css('display')=='none');$('.menu').css('display','none');if(active)$('#exit_menu').css('display','block');else $('#exit_menu').css('display','none');menu_controller.setmenutimeout()" >Exit</a>
+<div class="menu" id='exit_menu' style='display:none;position:absolute;z-index:3600;left:80px'>
+<a class="menuItem" href="javascript:save_and_exit());">Home</a>
+<a class="menuItem" href="javascript:save_and_exit());">Logout</a>
+</div>
+</div>
+</%def>
+<%def name="body()">
+<script type="text/javascript" src="/lib/ui.core.js"></script>
+<script type="text/javascript" src="/lib/ui.draggable.js"></script>
+<script type="text/javascript" src="/lib/ui.droppable.js"></script>
+      <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js" type="text/javascript"></script> 
+      <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/jquery-ui.min.js" type="text/javascript"></script> 
+      <script src="http://jquery-ui.googlecode.com/svn/tags/latest/external/jquery.bgiframe-2.1.1.js" type="text/javascript"></script> 
+      <script src="http://jquery-ui.googlecode.com/svn/tags/latest/ui/minified/i18n/jquery-ui-i18n.min.js" type="text/javascript"></script> 
+   
+   <script type="text/javascript" src="/ample/runtime.js"></script>
+<script type="text/javascript" src="/ample/languages/xhtml/xhtml.js"></script>
+<script type="text/javascript" src="/ample/languages/svg/svg.js"></script>
+   
+
+      <script src="/lib/tlm/telemetryStream.js"></script>
+      <script src="/lib/tlm/visualization.js"></script>
+      <script src="/lib/tlm/controller_client.js"></script>
+
+
+<script>
+	var ${c.display.get_short_name()}_ts;
+try{
+  visualization_controller= new Visualization_Controller_Proxy( '${c.display.get_short_name()}', '${c.configuration}', '${c.scenario}');
+  menu_controller = new Menu_Controller(visualization_controller);
+ } catch(e){
+  alert(e);
+ }
+</script>
+
+ 
+<p/>  
+
+<div>
+
+<table width='100%'>
+  <tbody>
+    <tr valign='top'>
+      <td valign='top' style='width:15%;margin:0;padding:0;vertical-align:top' >
+        <div valign='top'>
+       	  <div  name='palette_menu'  id='palette_menu' valign='top' class='taskbar' >
+      	     <%include file="/tlm/develop/Visualization-palette_menu.html" /> 
+      	  </div>
+          <div>
+             <%include file="/tlm/develop/Visualization-monitor_menu.html" /> 
+      	  </div>
+  	    </div>
+  	  </td>
+      <td valign='top' width='70%' >
+        <div align='left' id='main_display' name='main_display' >
+          <%include file="/tlm/develop/Visualization-main.html" />
+        </div>
+      </td>
+      <td valign='top' width='15%'>
+        <div id='properties' valign='top' class='taskbar' name='Properties_Editor'>
+	  	  <div class='headbox' name='Properties_Editor_Title'>
+		    <h2 align='center' style='margin-top:5'>
+               <img padding='5pt' src='/icons/properties.png' height='35pt'/>
+		       Properties
+            </h2>
+		  </div>
+		  <div class='taskbox' >
+             <h3>Current Tab</h3>
+ 		     <form action="javascript:visualization_controller.rename_window( $('#currenttabname_field')[0].value)">
+		       <table>
+		        <tbody>
+   		          <tr>
+		     	    <td>
+		     	       <label>Tab&nbsp;Name:</label></td><td><input id='currenttabname_field' type='text' value='${c.window.get_name()}'></input>
+		     	       <input type='submit'  name='submit' value='Update' />
+		     	   </td>
+  		          </tr>
+		        </tbody>
+		      </table>
+		     </form>
+ 	         <div id='properties_menu' name='properties_menu'>
+              <%include file='/tlm/develop/Visualization-properties_menu.html'/>
+             </div>
+          </div>
+        </div>
+      </td>
+     </tr>
+   </tbody>
+  </table>
+</div>
+<script>
+     selected_tab='${c.selected}';
+
+//     function move_tile(tile_id, from_position, to_position){
+//   	  document.body.style.cursor = 'progress'; 
+//         try{
+//     	  	$.ajax({url:"/Visualization/move_tile",
+// 		   data:({display:'${c.name}', scenario:'${c.scenario}', configuration:'${c.configuration}', tab:selected_tab,
+// 			 type:tile_id, from_x_pos:from_position.x_pos, from_y_pos: from_position.y_pos,
+// 			 to_x_pos : to_position.x_pos, to_y_pos:to_position.y_pos}),
+// 		fail: function(){alert("Failed to move tile");document.body.style.cursor = 'auto'; },
+// 		   success : function(mainhtml){	 
+//     	     $('#main_display').html(mainhtml);
+// 		     setup_drag_and_drop();
+// 			 document.body.style.cursor = 'auto';
+// 		      	 }});
+//       } catch(e) {
+//       }
+//     }
+
+    
+// function select_tab(tabname){
+// 	  document.body.style.cursor = 'progress'; 
+// 	    $.ajax({url:'/Visualization/select_tab',
+// 		data:({display:'${c.name}', scenario:'${c.scenario}', configuration:'${c.configuration}', tab:tabname}),
+// 		  error : function(){
+// 			  document.body.style.cursor = 'auto';
+// 			  alert('Unknown error in displaying requested tab');
+// 			   },
+// 		  success: function(html){
+// 	   	    document.body.style.cursor = 'auto'; 
+// 	        try {
+// 		   $('#main_display').html(html);
+// 		   $('#currenttabname_field')[0].value=tabname;
+// 		   $('#properties_addl').html('');
+// 		   $('#properties_tile_name')[0].value='Click on Tile';
+// 		   $('#properties_tile_name')[0].disabled='True';
+// 		   $('#row_span')[0].value='No Tile Selected';
+// 		   $('#row_span')[0].disabled='True';
+// 		   $('#col_span')[0].value='No Tile Selected';
+// 		   $('#col_span')[0].disabled='True';} catch(e){}
+// 		   setup_drag_and_drop();
+//               }
+
+//   	       });
+  
+// }
+
+// function add_new_tab(){
+// 	document.body.style.cursor = 'progress';         $.ajax({url:'/Visualization/add_new_tab',
+// 		data:({display:'${c.name}', scenario:'${c.scenario}', configuration:'${c.configuration}'}),
+// 		error: function(){document.body.style.cursor = 'auto';alert("unknown error when adding new window");},
+//         success: function(html){
+//     		document.body.style.cursor = 'progress'; 
+// 		   $('#main_display').html(html);
+// 		   setup_drag_and_drop();
+//               }
+
+//   	       });
+// }
+
+// function remove_tab(tabname){
+//      	document.body.style.cursor = 'progress'; 
+//         $.ajax({url:'/Visualization/remove_tab',
+// 		   data:({display:'${c.name}', scenario:'${c.scenario}', configuration:'${c.configuration}', tab:tabname, current:selected_tab}),
+//                 error:function(){document.body.style.cursor = 'auto';alert("Error removing tab");},                
+//                 success: function(html){
+//                 	document.body.style.cursor = 'auto';
+// 		            $('#main_display').html(html);
+// 		            setup_drag_and_drop();
+//                }
+
+//   	       });
+  
+// }
+
+// function expand_tilerowspan(x_pos, y_pos){
+//         $.ajax({url:'/TileProperties/increment_rowspan',
+// 		   data:({display:'${c.name}', scenario:'${c.scenario}', configuration:'${c.configuration}', tab:selected_tab,
+// 			 x_pos:x_pos, y_pos:y_pos}),
+//                 success: function(html){
+// 		   $('#main_display').html(html);
+// 		   setup_drag_and_drop();
+//               }
+
+//   	       });
+   
+// }
+
+// function reduce_tilerowspan(x_pos, y_pos){
+//         $.ajax({url:'/TileProperties/decrement_rowspan',
+// 		   data:({display:'${c.name}', scenario:'${c.scenario}', configuration:'${c.configuration}', tab:selected_tab,
+// 			 x_pos:x_pos, y_pos:y_pos}),
+//                 success: function(html){
+// 		   $('#main_display').html(html);
+// 		   setup_drag_and_drop();
+//               }
+
+//   	       });
+   
+// }
+
+// function expand_tilecolspan(x_pos, y_pos){
+//         $.ajax({url:'/TileProperties/increment_colspan',
+// 		   data:({display:'${c.name}', scenario:'${c.scenario}', configuration:'${c.configuration}', tab:selected_tab,
+// 			 x_pos:x_pos, y_pos:y_pos}),
+// 		   success: function(html){ 
+//                       $('#main_display').html(html);
+// 		      setup_drag_and_drop();
+//                     }
+
+//   	       });
+   
+// }
+
+// function reduce_tilecolspan(x_pos, y_pos){
+//         $.ajax({url:'/TileProperties/decrement_colspan',
+// 		   data:({display:'${c.name}', scenario:'${c.scenario}', configuration:'${c.configuration}', tab:selected_tab,
+// 			 x_pos:x_pos, y_pos:y_pos}),
+//                 success: function(html){
+// 		   $('#main_display').html(html);
+// 		   setup_drag_and_drop();
+//               }
+
+//   	       });
+   
+// }
+
+//     function remove_tile( x_pos, y_pos){ 
+//     	document.body.style.cursor = 'progress'; 
+//         $.ajax({url:'/Visualization/remove_tile',
+//               data:({display:'${c.name}', scenario:'${c.scenario}', configuration:'${c.configuration}', tab:selected_tab,
+//              	      x_pos:x_pos, y_pos:y_pos}),
+//               error: function(){document.body.style.cursor = 'auto'; alert("Error removing tile.");},
+//               success: function(html){
+//             	  $('#main_display').html(html);
+// 		          $('#main_display').ready(function(){
+// 			      setup_drag_and_drop();});
+//               }
+
+//   	       });
+//     }
+
+//     function append_tile(elem_id, position){
+//     	document.body.style.cursor = 'progress'; 
+//       $.ajax({
+// 	url:"/Visualization/append_tile",
+// 	    type:'GET',
+// 	    data:({display:'${c.name}', scenario:'${c.scenario}', configuration:'${c.configuration}', tab:selected_tab,
+// 		       type:elem_id, x_pos: position.x_pos, y_pos:position.y_pos}),
+// 		error: function(){document.body.style.cursor = 'auto';alert("Error placing tile.");},
+// 	    success: function(html){        	
+// 	        $('#main_display').html(html);
+// 	        $('#main_display').ready(function(){
+//          	    setup_drag_and_drop();
+// 	    });
+// 	  }});
+//     }
+
+//     function setup_drag_and_drop(){
+//     	document.body.style.cursor = 'auto';
+//       //drag and drop operations for placing tiles
+//       $(".tile_draggable, .monitor_droppable").draggable("destroy");
+//       $(".tile_receiver").droppable("destroy");
+//       $(".monitor_droppable").droppable("destroy");
+//       $(".monitor_graphic").resizable("destroy");
+	  	   
+       
+//       $(".tile_draggable, .monitor_droppable").draggable({helper:'clone',zIndex:2600}); 
+//          $(".monitor_draggable").draggable({helper:'clone'});
+//       $(".tile_receiver").droppable({ 
+//             accept:'.tile_draggable, .monitor_droppable',
+//             drop: function(event, ui) { 
+//               elem_id=ui.draggable[0].id;
+// 	      try{
+// 			//moving tile to another position:
+// 			from_position=eval(elem_id+'_position');
+// 			to_position=eval(this.id + '_position');
+// 			move_tile(elem_id, from_position, to_position);
+
+// 		      } catch(e){
+// 			position=eval(this.id+'_position');
+// 			append_tile(elem_id, position);
+// 	      }
+// 	  	}
+// 	   });
+//      $(".monitor_droppable").droppable({
+//          accept:'.monitor_draggable',
+//          drop: function(event, ui){ 
+//     	   document.body.style.cursor = 'progress';
+//     	   elem_id=ui.draggable.attr('name');
+//            position=eval(this.id+'_position');      
+//            data={display:'${c.name}', scenario:'${c.scenario}', configuration:'${c.configuration}', tab:selected_tab,
+//     	         x_pos:position.x_pos, y_pos:position.y_pos, monitor:elem_id};
+//            filterthis=false;
+//            $('.'+elem_id+'_attrchecked').each(function(index, elem){
+//                 if (elem.checked) data[elem.name]=elem.checked?true:false;
+//                 else filterthis=true;
+//            });
+//            $.ajax({url: "/TileProperties/append_monitor",
+//      		     data:( data),
+//      		     error: function(){alert("Error adding monitors");   document.body.style.cursor = 'auto';},
+//    		         success : function(html){
+//  		            $('#main_display').html(html);
+//  		            setup_drag_and_drop();
+//                   }
+//                });
+//         }
+//       });
+//       //on click of a tile, select it (change back ground color and updated properties menu on right)
+//       $('.monitor_droppable').click
+// 	( function(){
+// 	  position=eval(this.id+'_position');      
+// 	  selected_elem=this; 
+// 	  $.ajax({url: "/Visualization/select_tile",
+// 		     data:( { configuration:'${c.configuration}',
+// 			      scenario:'${c.scenario}',
+// 			      tab:selected_tab,
+// 			   x_pos:position.x_pos,
+// 			   y_pos:position.y_pos}),
+// 		     success : function(html){
+// 		     $('.monitor_droppable').css('background-color', 'tan');
+// 		     selected_elem.style.backgroundColor='#FFFFE5';
+// 		     $('#properties_menu').html(html);
+// 		   }});
+// 	}
+// 	  );
+//     $(".monitor_graphic").resizable({ 
+// 			start: function(event,ui){
+// 			this.style.borderStyle='groove';
+// 			this.style.borderColor='white';
+// 			if (this.setVisible) this.setVisible(false);
+// 			},
+//           stop: function(event, ui) {
+// 		     elemid=this.id; 
+//        		 this.style.borderStyle='none';
+    			   
+// 			 newwidth = ui.size.width;
+// 			 newheight = ui.size.height;
+//              position=eval(this.id.replace('_graphic','')+'_position');
+
+//              data={ configuration:'${c.configuration}',
+//    			      scenario:'${c.scenario}',
+//    			      tab:selected_tab,
+//      		      x_pos:position.x_pos,
+//    			      y_pos:position.y_pos};
+//    			 data['property:width'] = newwidth;
+//    			 data['property:height'] = newheight;
+//     			 $.ajax({url:'/TileProperties/set_basic_properties',
+//    				data:(data),
+//    				success:function(html){
+//    				   $('#main_display').html(html);		   
+//    				   setup_drag_and_drop();
+//    			  	  if($('#'+elemid)[0].setVisible){
+//    	   			  	  try{
+//    		          	$('#'+elemid)[0].setVisible(true);
+//    	   			  	  } catch (e){}
+//    		    	  }	   	
+   		  
+// 				}
+//    			 });
+    
+//          }
+          
+//       });
+    
+    
+    
+//     }
+
+//    setup_drag_and_drop();
+  
+
+//     //expand a menu through ajax 
+//     function toggle_menu(menuid ){
+//       visible=($('#menu_'+menuid)[0].expanded=='true');
+//       $('.submenu').css('display','none');
+//       $('.menulink').each( function(index,elem){elem.expanded='false';elem.innerHTML= '&#9654;&nbsp;'+ elem.title;});
+//       if (visible){
+//         $('.'+menuid + '_submenu').css('display','none');
+//         $('#menu_'+menuid).html('&#9654;&nbsp;'+$('#menu_'+menuid)[0].title);
+//       } else {
+//         $('.'+menuid + '_submenu').css('display','block');
+//         $('#menu_'+menuid).html('&#9660;&nbsp;'+$('#menu_'+menuid)[0].title);
+//       }
+//      $('#menu_'+menuid)[0].expanded='' + !(visible);
+//     }
+
+// function changetabname(){
+//   var name = $('#currenttabname_field')[0].value;
+//   if (name=='' || name==null){ 
+//     alert("Name cannot be empty");
+//   } else
+//   $.ajax({url: "/Visualization/rename_tab",
+// 	     data:( {
+// 	       configuration:'${c.configuration}',
+// 		   scenario:'${c.scenario}',
+// 		   tab:selected_tab,
+// 		   name: name
+// 		   }),
+// 	     error : function(){
+// 	             alert("Name must be a unique tab name");
+//          	   },
+// 	     success : function(html){
+// 		 $('#main_display').html(html);      
+// 		 setup_drag_and_drop();
+// 	       }});
+  
+// }
+
+
+// function update_tile_basic_properties(){
+// 	data = {}; 
+// 	$.each($('.tile_basic_property'),function(index,elem){ if ( elem){
+// 		if (elem.type=='checkbox') data['property:'+elem.id]=elem.checked;
+// 		else
+// 			data[elem.id]=elem.value; }
+// 	}); 
+// 	$.ajax({url:'/TileProperties/set_basic_properties',
+// 		data:(data),
+// 		success:function(html){
+// 		   $('#main_display').html(html);		   
+// 		   setup_drag_and_drop();
+// 		 }
+// 	 });
+// 	return false;//do not relocate/reload window, AJAX  and js handles updates for us
+// }
+
+// function update_tile_properties(){
+// 	data = {configuration:'${c.configuration}',
+//             scenario:'${c.scenario}',
+//             tab : $('.selectedtab')[0].id.replace('_tab',''),
+//             x_pos : $('#tile_x_pos')[0].value,
+//             y_pos : $('#tile_y_pos')[0].value
+// 			}; 
+// 	$.each($('.tile_property'),function(index,elem){ if ( elem){
+// 		if (elem.type=='checkbox') data['property:'+elem.id]=elem.checked;
+// 		else
+// 			data['property:' +elem.id]=elem.value; }
+// 	}); 
+// 	$.ajax({url:'/TileProperties/set_properties',
+// 		data:(data),
+// 		success:function(html){
+// 		   $('#main_display').html(html);		   
+// 		   setup_drag_and_drop();
+// 		 }
+// 	 });
+// 	return false;//do not relocate/reload window, AJAX  and js handles updates for us
+// }
+
+// function save_display_as(){
+// 	$('.menu').css('display','none');
+//     $('#name_query').css('display','inline');
+// }
+
+// function save_display(){
+// 	data = {configuration:'${c.configuration}',
+//             scenario:'${c.scenario}',
+//             tab : $('.selectedtab')[0].id.replace('_tab','')};
+//  	$.ajax({url:'/Visualization/save',
+// 		data:(data),
+// 		error : function(){alert("Error in saving display \"${c.name}\"");},
+// 		success:function(html){
+// 		   alert("Display \"${c.name}\" successfully saved");
+// 		 }
+// 	 });
+//    $('.menu').css('display','none');
+// }
+
+
+
+
+// function setmenutimeout(){
+//    setTimeout("$('.menu').css('display','none')",4000);
+// }
+
+// function submit_rename(name){
+// 	document.body.style.cursor = 'progress'; 
+// 	   $('#name_query').css('display','none');
+// 	data = {configuration:'${c.configuration}',
+//             scenario:'${c.scenario}',
+//             tab : $('.selectedtab')[0].id.replace('_tab',''),
+//             newname: name};
+//         $.ajax({
+// 	    url:'/Visualization/copy_to',
+// 		data:(data),
+// 		error : function(){alert("Error in saving display \"${c.name}\"");	document.body.style.cursor = 'auto'; },
+// 		success:function(js){	document.body.style.cursor = 'auto';	 
+//                    eval(js);
+// 		 }
+
+//    }); 
+//    return false;//do not reload or redirect page
+// }
+
+
+//   function update_monitor_attrs( tile, monitor){
+// 	  document.body.style.cursor = 'progress';
+// 	  position=eval(tile+'_position');
+//       data={ configuration:'${c.configuration}',
+// 			      scenario:'${c.scenario}',
+// 			      tab:selected_tab,
+//  		          x_pos:position.x_pos,
+// 			      y_pos:position.y_pos,
+// 			      monitorname: monitor};
+//       count=0;
+      
+//       $('.'+monitor+'_tileprop_attrchecked').each(function(index,elem){
+//           if (elem.checked){
+// 	         data[elem.name]=elem.name; 
+// 	         ++count;
+//           }
+//       });
+//       if (count==0 && confirm("Really remove monitor from tile?")) return remove_monitor(tile,monitor);
+//       $.ajax({
+//   	    url:'/TileProperties/update_monitor_attrs',
+//   		data:(data),
+//   		error : function(){alert("Error updating tile "+tile);	document.body.style.cursor = 'auto'; },
+//   		success:function(html){	
+//   	  		document.body.style.cursor = 'auto';	
+//   		    $('#main_display').html(html);		   
+// 		    setup_drag_and_drop();
+// 		   }
+
+//       });
+//   }
+
+//   function remove_monitor( tile, monitor){
+// 	  document.body.style.cursor = 'progress';
+// 	  position=eval(tile+'_position');
+//       data={ configuration:'${c.configuration}',
+// 			      scenario:'${c.scenario}',
+// 			      tab:selected_tab,
+//  		          x_pos:position.x_pos,
+// 			      y_pos:position.y_pos,
+// 			      monitorname: monitor};
+//       $.ajax({
+//     	    url:'/TileProperties/remove_monitor',
+//     		data:(data),
+//     		error : function(){alert("Error removing monitor"+monitor+" from "+tile);	document.body.style.cursor = 'auto'; },
+//     		success:function(html){	
+//     	  		document.body.style.cursor = 'auto';	
+//     		    $('#main_display').html(html);		   
+//   		        setup_drag_and_drop();
+//   		   }
+//       });
+//   }
+
+      
+     </script>
+     <div style='z-index:7000;position:absolute;top:0;left:0;display:none;background-color:silver;border-width:3;border-style:outset;height:100px'
+        id='name_query'>
+        <div align='right'>
+        <a href="javascript:$('#name_query').css('display','none')" style='border-width:1;border-style:groove'><b>X</b></a><p/>
+        </div>
+        <form action='' onsubmit="submit_rename($('#display_name_input')[0].value); return false">
+         <label>New Display Name: </label>  <input id='display_name_input' type='text' maxlength='32' length='20' value='${c.name}'></input>
+         <input type='submit' value='Submit'></input>
+       </form>
+     </div>
+</%def>
+<%def name="footer()">
+</%def>
+<%def name="title()">
+Calypso: ${c.scenario}
+</%def> 
+
+  

@@ -1,0 +1,69 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<%inherit file="/base/interaction.html"/>
+
+<%def name="head()">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+   <title>Calypso</title>
+   <link rel="stylesheet" href="/css/Calypso.css" type="text/css" media="all" /> 
+  %if c.theme!="":  
+  <link rel="stylesheet" href="/css/${c.theme}/jquery-ui-1.8.4.custom.css" type="text/css" media="all" /> 
+  %else:
+  <link rel="stylesheet" href="/css/default/jquery-ui-1.8.4.custom.css" type="text/css" media="all" /> 
+  %endif
+
+ 
+</%def>
+
+
+<%def name="heading()">
+  
+  <div  id='main_menubar' class="ui-state-default" style='padding: 5px 0px 5px 0px'>
+       <!-- Titlebar to identify what the user is currently editing -->
+      <h2 class='ui-state-active title_bar' style='padding:0;margin:0;width:90%'>
+       Welcome, ${c.user}!  Select an acton below.
+      
+      <select  style='float:right' id='theme_selection'>
+        <option value='default' >Default</option>
+        <option value='tartan'>Tartan</option>
+        <option value='smoothness2'>Smoothness</option>
+        <option value='obsidian' >Obsidian</option>
+        <option value='goldenwheat'>GoldenWheat</option>
+        <option value='buckeye'>Buckeye</option>
+      </select><label style='float:right'>Theme:</label>
+       </h2>
+      
+  
+  </div>
+</%def>
+  
+
+<%def name="body()">
+  <form id='new_project_form' name=new_project_form' 
+        method="POST" action="/main/create_new_project">
+      Name: <input type='text' id='project_name'></input>         
+      Contract Number: <input type='text' id='contract_number'></input>
+ </form> 
+   
+   
+  
+  <!-- SPACER TO KEEP BODY PROPERSIZE AND BACKGROND DISPLAY CORRET  -->
+  <img style='display:inline;z-index:3;height:100%;width:0px' src=''></img>
+  
+  <!--  set up client-side behavior -->
+  <script>
+  String.prototype.startsWith = function(str) 
+  {return (this.match("^"+str)==str)}
+  $('#theme_selection').change(function(){
+      hrefs=location.href.split('&theme');
+      address=location.href.split('?');
+      if (address[0]==location.href || address[1].startsWith('theme')) {
+          location.href=address[0]+"?theme=" + $(this).val();
+      } else{
+         hrefnew=hrefs[0];           
+         location.href=hrefnew + '&theme=' + $(this).val();
+      }
+ });
+
+
+  </script>
+</%def>

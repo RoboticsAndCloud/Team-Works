@@ -1,0 +1,68 @@
+
+import calypso.lib.base
+import calypso.lib.helpers
+
+class BaseController(calypso.lib.base.BaseController):
+
+    class Action:
+
+        def __init__(self, action, linkname, *args, **kargs):
+            self.name = action
+            self.linkname = linkname
+            self.params = dict()
+            for key in kargs:
+                self.params[key] = args[key]
+
+        def url_for(self, controller):
+            calypso.lib.helpers.url_for( controller = controller,
+                                         action = self.name,
+                                         self.params)
+                
+    class ActionList:
+
+        def __init__(self,name):
+            self.name = name
+            self.actions=[]
+            
+        def add_action(self, action, linkname):
+            self.actions.append(BaseController.Action(action,linkname))
+
+    class TaskCategory:
+
+        def __init__(self, title, image):
+            self.title = title
+            self.image = image
+            self.actionlists = []
+            self.actiondict = {}
+            
+        def add_actionlist(self, name):
+            actionlist = ActionList(name)
+            self.actionlists.append( actionlist )
+            self.actiondict[name] = actionlist
+            return actionlist
+            
+        def add_action( self, name, action, linkname):
+            self.actiondict[name].add_action(action,linkname)
+            
+    user = None
+
+        
+    def add_task(self, title, image):
+        task = Task(title, image)
+        self.tasks.append( task)
+        self.taskdict[title] = task
+        return task
+
+    def __init__(self):
+        self.tasks = []
+        self.taskdict = {}
+        users=calypso.db.session.query(calypso.users.User).order_by(calypso.users.User.lastname,calypso.users.User.userid)
+        if not( taskdict.has_key("Users")):
+            self.add_task("Users", "users.png")
+        list = self.taskdict["Users"].add_actionlist("Administer Users")
+        for user in users:
+            if user.lastname=='' or user.lastname==None:
+                list.add_action('edit_user',user.userid, userid=user.userid)
+            else:
+                list.add_action('edit_user', user.lastname + ', ' + user.firstname, userid=user.userid)
+        

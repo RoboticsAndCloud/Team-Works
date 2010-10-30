@@ -1,0 +1,62 @@
+  <!-- Ample SDK javascripts -->
+
+<script type="text/javascript" src="/ample/runtime.js"></script>
+<script type="text/javascript" src="/ample/languages/xhtml/xhtml.js"></script>
+<script type="text/javascript" src="/ample/languages/svg/svg.js"></script>
+ 
+<div id='${c.formatview}_graphic' name='${c.formatview}_${c.name}'  style='height:${c.properties.Height()}px;width:${c.properties.Width()}px;'
+ align='center' class='monitor_graphic' >
+
+
+
+
+
+   <div id='chart${c.formatview}'    align='center' style='width:100%; height:100%;overflow:hidden'>
+     <h3 align='center'>${c.formatview}</h3>
+<div>
+ <iframe src='${h.url_for(controller="Visualization",action="heatmap",configuration=c.configuration,scenario=c.scenario,x_pos=c.properties.x_pos(),y_pos=c.properties.y_pos(),tab=c.selected)}' name='${c.formatview}.heatmap' width='${c.properties.Width()}' height='${c.properties.Height()}'  frameborder='0' scrolling='no' marginheigh='0' marginwidth='0'>
+</iframe>
+ </div>
+ </div> 
+
+</div>
+<script>
+  var ${c.name.replace(' ','_')}_ts;
+  
+  CellMapMonitor = function(name, id, min, max,yellow_mark){
+    this.min=min;
+    this.max=max;
+    this.yellow_mark=yellow_mark
+    this.name=name;
+    this.id=id;
+    this.element=document.getElementById('heatmap_'+id);
+
+  this.setValue = function(time, value){
+      if (this.element == null) {alert("NO!" + this.id); this.element=2;}
+      redfraction=parseFloat(''+ (value-this.min))/parseFloat(''+(this.max - this.min));
+      greenfraction= redfraction*(2.0*this.yellow_mark - redfraction)/this.yellow_mark/this.yellowmark;
+      redfraction=(redfraction>1.0)?1.0:redfraction;
+      greenfraction=(greenfraction>1.0)?1.0:greenfraction;
+      red = parseInt(''+(redfraction*255.0));
+      green = parseInt(''+(greenfraction*255.0));
+      blue=0;
+      this.element.style.backgroundColor= 'rgb('+red+','+green+','+blue+')';
+    }
+  }
+
+%for mon in c.monitors:
+%for  attr in mon.attrs():
+  cellMapMonitor${mon.get_name()}=new CellMapMonitor('${mon.get_name()}','${mon.get_id()}.${attr[1]}',${c.properties.Lower_Bound()}, ${c.properties.Upper_Bound()},${c.properties.Yellow_Mark()});
+  if(${c.display.get_short_name().replace(' ','_')}_ts)
+     ${c.display.get_short_name().replace(' ','_')}_ts.addMonitor(cellMapMonitor${mon.get_name()},'${mon.get_id()}.${attr[1]}');
+%endfor
+%endfor
+</script>
+
+<div align='center'>
+<script>
+
+
+
+</script>
+</div>

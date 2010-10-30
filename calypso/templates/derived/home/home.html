@@ -1,0 +1,17 @@
+<%inherit file="/base/index.html"/>
+<div align='center'>
+  <div align='center' style='padding:10pt;align:center;width:70%;height:100%'>
+    <h3 style='color:red'>${c.errortext}</h3>
+    <div style='position:bsolute;top:20%;left:50%'>
+     <a href='${h.url_for(controller='administration',action='view')}'><img border=0 width='150' height='150' src='/icons/administer.gif'></img></a>
+    </div>
+    <div style='position:absolute;top:70%;left:20%'>
+      <a  href='${h.url_for(controller='monitor_controller',action='view')}'><img border=0 width='150' height='150' src='/icons/monitor.png'></img></a>
+    </div>
+    <div style='position:absolute;top:70%;left:70%'>
+      <a  href='${h.url_for(controller='developer',action='view')}'><img border=0 width='150' height='150' src='/icons/developer.png'></img></a>
+    </div>
+  </div>
+</div>
+${c.content}
+<%def name="footer()"></%def>

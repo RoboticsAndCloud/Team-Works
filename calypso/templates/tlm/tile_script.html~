@@ -1,0 +1,9 @@
+<script>
+%for monitor in c.monitors:
+  monitors['${monitors.get_name()'].displayed=[];
+  displayed=monitors['${monitors.get_name()'].displayed;
+  %for attr in monitor.attrs():
+  displayed['${attr.get_name()}']
+  %endfor
+%endfor
+</script>

@@ -1,0 +1,90 @@
+import festival
+import calypso.config.routing
+import urllib
+import string
+import time
+
+import logging
+
+from pylons import request, response, session, tmpl_context as c
+from pylons.controllers.util import abort, redirect_to
+
+from calypso.lib.base import BaseController, render
+import calypso.lib.helpers
+
+log = logging.getLogger(__name__)
+
+class Tutorial:
+
+    active = False
+    ttsclient = festival.Festival()
+    
+    class Item:
+
+        def __init__(self, id, text):
+            self.id=id
+            self.text = text
+            self.js = '$("#'+string.replace(id,' ','')+ \
+                      '").animate({fontSize:"24px",bgColor:"yellow"},1000,null,null);$("#speak")[0].src=\"/tutorial/tts/%s\";;'%urllib.quote(id)
+            
+        def speak(self):
+            print "SPEAKING " + self.text
+            return Tutorial.ttsclient.wave(self.text)
+
+    def __init__(self):
+        self.items = []
+        self.itemdict={}
+
+    def add(self,id, text):
+        item = tutorial.Item(id, text)
+        self.items.append(item)
+        self.itemdict[id]=item
+
+    def speak(self, id):
+        return self.itemdict[id].speak()
+
+
+tutorial = Tutorial()
+
+class TutorialController(BaseController):
+
+    def tutor(self):
+        print "***********************************************"
+        print "PARAMS ARE "
+        print request.params
+        print "URL IS : " + calypso.lib.helpers.url_for(controller='tutorial',action='tutor',primary_controller='df')
+        self.conduct( 'administration')
+
+
+    def conduct(self, controller):
+        #commit database changes and swtich
+        #to test database for tutorial
+        self.user = calypso.users.UserSession.user
+        calypso.users.UserSession.user = calypso.users.User('tutorial','tutorial')
+        calypso.users.UserSession.user.firstname = self.user.firstname
+        calypso.users.UserSession.user.lastname = self.user.lastname
+        calypso.db.session.restart(tutorial=True)
+        #setting active to true will render the page upon
+        #redirect to the requested page except in tutorial
+        #mode
+        tutorial.active = True;
+        if controller != None:
+            redirect_to( calypso.lib.helpers.url_for( controller=controller, action='view') )
+        else:
+            redirect_to( calypso.lib.helpers.url_for( controller='home', action='view') )
+        
+    def stop(self):
+        calyspo.db.session.restart(tutorial=False)
+        tutorial.active = False
+        calypso.users.UserSession.user = self.user
+        redirect_to( h.url_for(controller='home', action='view'))
+
+    def speak_welcome(self):
+        response.content_type = 'audio/x-wav'
+        if self.__dict__.has_key('user'):
+            response.content = Tutorial.ttsclient.wave("Welcome, " + self.user.firstname + """" to Calypso' tutorial.
+            
+            """)
+        else:
+            response.content = Tutorial.ttsclient.wave("Welcome to Calypso' tutorial.")            
+        return

@@ -1,0 +1,47 @@
+## -*- coding: utf-8 -*-
+<%inherit file="/base/index.html"/>
+       <div id='content' style='position:relative;top:150' height='100%' width='100%'>
+      <table id='maintable' border='0' height='100%' width='100%'>
+	<tbody height='100%' width='100%'>
+	  <tr height='100%' width='100%'>
+	    <td id='taskbox' valign='top'>
+% for task in c.tasks:
+	      <div id='taskbar' name='${task.title}_tasks'>
+		<div id='headbox' name='${task.title}'>
+		  <h2 align='center' style='margin-top:5'>
+                       <img padding='5pt' src='/icons/${task.image}' height='35pt'></img>
+		       ${task.title}
+                  </h2>
+		</div>
+		<div id='taskbox'>
+%  for actionlist in task.actionlists:
+		  <h3 class='menucategory'>${actionlist.name}</h3>
+		  <ul style='list-style-type:square;color:tan' align='left'>
+%    for useraction in actionlist.actions:
+		    <li>
+		     <a href="${h.literal(useraction.name)}">${useraction.linkname}</a>
+	            </li>
+%    endfor
+		  </ul>
+%  endfor
+		</div>
+             </div>
+% endfor
+	    </td>
+            <td align='left' width='100%'>
+<h2 id='dbgmsg'></h2>
+% if c.message != '':
+<h2  style='color:#ddccaa;align:center' align='center'>${c.message or "Welcome to Calypso's Administration Page"}</h2>
+%endif
+% if c.body != '':
+${c.body}
+% endif
+  ${next.body()}
+            </td>
+        </tr>
+     </tbody>
+</table>
+
+<%def name="tabs()"></%def>
+<%def name="menu()"></%def>
+</div>

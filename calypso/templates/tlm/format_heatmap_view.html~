@@ -1,0 +1,106 @@
+  <!-- Ample SDK javascripts -->
+
+<script type="text/javascript" src="/ample/runtime.js"></script>
+<script type="text/javascript" src="/ample/languages/xhtml/xhtml.js"></script>
+<script type="text/javascript" src="/ample/languages/svg/svg.js"></script>
+ 
+<div id='${c.formatview}_graphic' name='${c.formatview}_${c.name}'  style='height:${c.properties.Height()}px;width:${c.properties.Width()}px;'
+ align='center' class='monitor_graphic' >
+
+
+
+
+
+   <div id='chart${c.formatview}'    align='center' style='width:100%; height:100%;overflow:hidden'>
+     <h3 align='center'>${c.formatview}</h3>
+       <table border='5' style='border-style:groove;border-color:tan'  frame='box' rules='none' style='width:100%; height:100%'>
+         <tbody style='width:100%; height:100%'>
+          <tr style='width:100%; height:100%'>
+            <td></td>
+        <td colspan='${len(c.flatattrs)+1}' style='z-index:-1300;overflow:visible'>
+         <div style='width:${len(c.flatattrs)*40}px;z-index:-1300;overflow:visible'>
+ <iframe name='${c.formatview}.heatmap' width='100%' height='100%'  frameborder='0' scrolling='no' marginheigh='0' marginwidth='0'>
+
+${h.literal("""
+<html xmlns='http://www.w3.org/1999/xhtml' xmlns:svg='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' width='100%'>
+<body width='100%'>
+   <div id="mapArea" width='100%'>
+      <img width='${(len(c.flatattrs)+3)*45 + 200}px' height='0px'></img>
+    <svg  style='overflow:visible' width='100%' height='100%'>  
+<g>""")}
+%for index in range(len(c.flatattrs)):
+           <text id='attr.${index}' style='overflow:visible' transform='rotate(-60,0,0)' font-size="14" 
+                font-style='underline' position='relative' x="${-116+18*index}" y="${104+28*index}">${c.flatattrs[c.flatattrs.keys()[index]][0]}</text>
+           <line   x1='${index*35}' y1='160' x2='${100+index*35}' y2='0' style='stroke:rgb(99,99,99);stroke-width:2' fill='black'></line>
+      
+          
+%endfor
+</g>
+ 		</svg>
+</div>
+</body>
+</html>
+</iframe>
+     
+         </div>
+       </td>
+         <td ></td>
+      </tr>
+%for mon in c.monitors:
+      <tr id='heatmaprow_${mon.get_name()}'>
+%if len(mon.attrs())==1 and mon.attrs()[0]==mon.get_name():
+      </tr><tr>
+%else:
+        <td>${mon.get_name()}</td>   
+%for  key,attr in c.flatattrs.iteritems():
+        <td id='heatmap_${mon.get_id()}.${attr[1]}' style='background:black' width='10em'></td>
+%endfor
+         <td ></td>       
+      </tr>
+%endif
+%endfor
+   </tbody>
+</table>
+ </div> 
+
+</div>
+<script>
+  var ${c.name.replace(' ','_')}_ts;
+  
+  CellMapMonitor = function(name, id, min, max,yellow_mark){
+    this.min=min;
+    this.max=max;
+    this.yellow_mark=yellow_mark
+    this.name=name;
+    this.id=id;
+    this.element=document.getElementById('heatmap_'+id);
+
+  this.setValue = function(time, value){
+      if (this.element == null) {alert("NO!" + this.id); this.element=2;}
+      redfraction=parseFloat(''+ (value-this.min))/parseFloat(''+(this.max - this.min));
+      greenfraction= redfraction*(2.0*this.yellow_mark - redfraction)/this.yellow_mark/this.yellowmark;
+      redfraction=(redfraction>1.0)?1.0:redfraction;
+      greenfraction=(greenfraction>1.0)?1.0:greenfraction;
+      red = parseInt(''+(redfraction*255.0));
+      green = parseInt(''+(greenfraction*255.0));
+      blue=0;
+      this.element.style.backgroundColor= 'rgb('+red+','+green+','+blue+')';
+    }
+  }
+
+%for mon in c.monitors:
+%for  attr in mon.attrs():
+  cellMapMonitor${mon.get_name()}=new CellMapMonitor('${mon.get_name()}','${mon.get_id()}.${attr[1]}',${c.properties.Lower_Bound()}, ${c.properties.Upper_Bound()},${c.properties.Yellow_Mark()});
+  if(${c.display.get_short_name().replace(' ','_')}_ts)
+     ${c.display.get_short_name().replace(' ','_')}_ts.addMonitor(cellMapMonitor${mon.get_name()},'${mon.get_id()}.${attr[1]}');
+%endfor
+%endfor
+</script>
+
+<div align='center'>
+<script>
+
+
+
+</script>
+</div>

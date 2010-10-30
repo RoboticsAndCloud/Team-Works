@@ -1,0 +1,41 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<%inherit file="/base/index.html"/>
+
+
+<%def name="workarea()">
+
+</%def>
+
+<%def name="body()">
+<style>
+h3 {
+  font-size:115%;
+}
+</style>
+<div id='root' style='position:relative'>
+  <div  style='display:inline-block;margin:0 0 0 0;width:15%;height:100%;top:0' >
+  <div id='menu' style='margin:0 0 0 0;position:absolute;top:0' >
+     <div class='ui-widget-header headbox' name='Tile_palette_Title'>
+        <h2 align='center' style='margin-top:5'>
+           <img padding='5pt' src='/icons/configuration.png' height='35pt'></img>
+            Basic Operations
+        </h2>
+     </div>
+     <div class='ui-widget-content' style='padding : 0 10px 0 10px '>
+     <h3><a href="/Main/new_project_form.html?theme=${c.theme}&mode=edit">Update ${c.project_class} Information</a></h3>  
+     <h3><a href="/Main/index">Exit Work Activity</a></h3>     
+    </div>
+  </div>
+  </div>
+ 
+  <div style='display:inline-block;height:100%;min-height:500px;width:70%;position:relative;background:white'>
+      <div style='height:100%;width:100%;position:absolute;top:0;background:white'>     
+         ${self.workarea()}
+      </div>
+  </div>    
+</div>
+  <!-- SPACER TO KEEP BODY PROPERLY SIZED AND BACKGROND DISPLAY CORRECT  -->
+  <img style='display:inline;height:100%;width:0px' src=''></img>
+  
+  
+</%def>

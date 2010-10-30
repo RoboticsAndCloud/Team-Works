@@ -1,0 +1,70 @@
+<script type="text/javascript" src="/lib/tlm/telemetryStream.js"></script>
+   <script>
+   ${c.format.name}_ts = new TelemetryStream
+    ( '/Scenario/start_stream/${c.name}/${c.scenario}/${c.version}/${c.format.name}/1',
+      1.0,
+      document.getElementById('format_field'),
+      document.getElementById('time_field'));
+</script>
+<div id="dbg" >
+</div>
+<div id='${c.name}' name='${c.name}' width='100%'>
+  <table class='displaytable' valign='top'>
+     <tbody>
+%for row in c.tiles:
+       <tr>
+%for  tile in row:
+          <td colspan='${tile['properties'].col_span}' rowspan='${tile['properties'].row_span}' valign='top'>${tile['content'].render_html(tile['properties'])}</td>
+%endfor
+       </tr>
+%endfor
+     </tbody>
+  </table>
+
+  <iframe style='width:0pt;height:0pt' src='a' id='telemetrystreamframe'></iframe>
+
+</div>
+<script>	
+   function initializeTelemetry(){
+       ${c.format.name}_ts.initialize();
+   }
+	
+   function onUnloadTelemetry(){
+       ${c.format.name}_ts.onUnload();
+   }
+
+
+   telemetrystreamframe=document.getElementById('telemetrystreamframe');
+  
+   function TableMonitor(name){
+      this.element=document.getElementById(name + "_value");
+      this.name = name;
+
+      this.setValue = function(time, value, criticality){
+         this.element.innerHTML=''+value;
+      }
+   };
+   
+%for row in c.tiles:
+%for   tile in row:
+%for      mon in tile['content'].monitors:
+%if len(mon.attrs())==1:
+   if (document.getElementById("${mon.id}_tag")!=null)
+      ${c.format.name}_ts.addMonitor(new TableMonitor("${mon.id}"),"${mon.id}");
+%else:
+%for attr in mon.attrs():
+   if (document.getElementById("${mon.id}.${attr[1]}_tag")!=null)
+      ${c.format.name}_ts.addMonitor(new TableMonitor("${mon.id}.${attr[1]}"),"${mon.id}.${attr[1]}");
+%endfor
+%endif
+%endfor
+%endfor
+%endfor
+</script>
+<script>
+
+   $(document).ready(  initializeTelemetry);
+   $(window).unload(  onUnloadTelemetry);
+
+
+</script>

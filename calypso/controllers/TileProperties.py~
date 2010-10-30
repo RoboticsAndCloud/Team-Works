@@ -1,0 +1,141 @@
+from calypso import session as calypso_session
+import logging
+import sys
+import os
+
+from pylons import request, response, session, tmpl_context as c
+from pylons.controllers.util import abort, redirect_to
+from routes import url_for as url_for
+from calypso.lib.base import BaseController, render
+
+log = logging.getLogger(__name__)
+
+from calypso.model.meta import Session as sqlsession
+from calypso.tlm.view import *
+from calypso.tlm import *
+import calypso
+from pylons import session
+
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))+'/scenarios')
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))+'/scenarios/'+sys.argv[1]+'/lib')
+
+import logging
+
+from pylons import request, response, session, tmpl_context as c
+from pylons.controllers.util import abort, redirect_to
+
+from calypso.lib.base import BaseController, render
+
+log = logging.getLogger(__name__)
+
+from calypso.controllers.Visualization import VisualizationController as VisualizationController;
+
+#inheritance from main controller is here only to prevent multiple controller threads from ajax calls;  such a case
+#would impair ability to work with db
+class TilepropertiesController(VisualizationController):
+
+    def __init__( self):
+        VisualizationController.__init__(self)
+        
+        c.configuration=request.params['configuration']
+        c.scenario=request.params['scenario']
+        c.selected=request.params['tab']
+        c.x_pos=int(request.params['x_pos'])
+        c.y_pos=int(request.params['y_pos'])
+        c.display = calypso_session[self.user]['display']
+        c.tabs = c.display.tabs
+        c.tab=c.selected
+        c.window  = c.display.get_window(c.selected)
+        
+    def rename(self):
+        newname=request.params['newname']
+        c.window.tiles[c.y_pos][c.x_pos].tile.set_name(newname)
+        return render('/tlm/develop/Visualization-main.html')
+
+    def set_basic_properties(self):
+        tile = c.window.tiles[c.y_pos][c.x_pos]
+        for propname,value in request.params.iteritems():
+            properties=tile.properties
+            key=propname.replace('property:','')
+            if key == 'tile_name':
+                tile.tile.set_name(value)
+            elif propname.startswith('property:'):
+                properties.basic_params[key].set_value(value)
+        return render('/tlm/develop/Visualization-main.html')   
+    
+    def set_properties(self):
+        for key,value in request.params.iteritems():
+            if key.startswith('property:'):
+                propname=key.replace('property:','')
+                properties=c.window.tiles[c.y_pos][c.x_pos].properties
+                if propname=='col_span':
+                    properties.col_span.set_value(value)
+                elif propname=='row_span':
+                    properties.row_span.set_value(value)
+                else:
+                    properties.params[propname].set_value(value)
+        return render('/tlm/develop/Visualization-main.html')   
+ 
+         
+    def _remove_monitor(self, configuration, scenario, display, tab, x_pos, y_pos, monitorname):
+        tile=c.window.tiles[int(y_pos)][int(x_pos)]
+        tile.tile.remove_monitor(monitorname)
+        return render('/tlm/develop/Visualization-main.html')   
+                
+    def _update_monitor_attrs(self, configuration, scenario, display, tab, x_pos, y_pos, monitorname,  **kargs):
+        tile=c.window.tiles[int(y_pos)][int(x_pos)]
+        monitorview=tile.tile.get_monitor(monitorname)
+        filtered=[]
+        for key,arg in kargs.iteritems():
+            filtered.append(arg)
+        monitorview.set_filtered(filtered)
+        return render('/tlm/develop/Visualization-main.html')   
+       
+    def _append_monitor(self, configuration, scenario, display, tab, x_pos, y_pos, monitor,  **kargs):
+        tile=c.window.tiles[int(y_pos)][int(x_pos)]
+        monitorview= tile.tile.get_monitor(monitor)
+        #MonitorView(monitor, displayname=c.display.get_name(), parentname=tile.get_name(), format=c.display.format)
+        tile.tile.append(monitorview)
+        filtered=[ key  for key, value in kargs.iteritems()]
+        monitorview.filter_attributes(filtered)
+        return render('/tlm/develop/Visualization-main.html')   
+    
+    def append_monitor(self):
+        print "??????????????????????????????" + str(request.params)
+        try:
+            return self._append_monitor(**request.params)
+        except:
+           import traceback
+           traceback.print_exception(sys.exc_info()[0], sys.exc_info()[1], sys.exc_info()[2])
+           return render('/tlm/develop/Visualization-main.html')   
+             
+    def update_monitor_attrs(self):
+        return self._update_monitor_attrs(**request.params)
+
+    def remove_monitor(self):
+        return self._remove_monitor(**request.params)
+            
+         
+    def increment_colspan(self):
+        tile=c.window.tiles[int(c.y_pos)][int(c.x_pos)]
+        currentspan=tile.properties.col_span()
+        tile.properties.col_span.set_value(currentspan+1)
+        return render('/tlm/develop/Visualization-main.html')   
+
+    def decrement_colspan(self):        
+        tile=c.window.tiles[int(c.y_pos)][int(c.x_pos)]
+        if tile.properties.col_span()>1:
+            tile.properties.col_span.set_value(tile.properties.col_span()-1)
+        return render('/tlm/develop/Visualization-main.html')   
+
+    def increment_rowspan(self):
+        tile=c.window.tiles[int(c.y_pos)][int(c.x_pos)]
+        tile.properties.row_span.set_value(tile.properties.row_span()+1)
+        return render('/tlm/develop/Visualization-main.html')   
+
+    def decrement_rowspan(self):
+        tile=c.window.tiles[int(c.y_pos)][int(c.x_pos)]
+        if tile.properties.row_span()>1:
+            tile.properties.row_span.set_value(tile.properties.row_span()-1)
+        return render('/tlm/develop/Visualization-main.html')   

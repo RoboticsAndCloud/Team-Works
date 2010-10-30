@@ -1,0 +1,15 @@
+${h.field( "Userid",
+      h.text(name='userid'),
+      required=True)}
+${h.field( "Password",
+      h.submit(name="Reset"),
+      required=False)}
+${h.field( "First Name",
+      h.text(name='firstname'),
+      required=True)}
+$(h.field( "Last Name",
+      h.text(name='lastname'),
+      required=True)}
+$(h.field( "email",
+      h.text(name='email"),
+      required=False)}

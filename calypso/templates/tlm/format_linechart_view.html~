@@ -1,0 +1,39 @@
+<!-- Line Chart -->
+<div id='${c.formatview}_graphic' class='monitor_graphic' name='${c.formatview}' class='plot' align='center'
+     style='width:${c.properties.Width()};height:${c.properties.Height()}' >
+   <div id='chart${c.formatview}'  display='overflow:hidden'>
+     <div id='fullchart${c.formatview}'>
+ <script type="text/javascript">
+//try{
+
+     plotattrs=new Array();
+     plotattrs = {maxlength:${c.properties.Time_Span()},
+    	ymin:${c.properties.Min_Value()},
+        ymax : ${c.properties.Max_Value()},
+        width : ${c.properties.Width()},
+        height : ${c.properties.Height()},
+	legendFontSize: 10,
+% if c.properties.__dict__.has_key("Background_Color"):
+        backgroundColor:'${c.properties.Background_Color()}',
+        axisColor:'${c.properties.Grid_Color()}',
+        legendColor:'${c.properties.Grid_Color()}',
+	titleColor:'${c.properties.Grid_Color()}',
+% endif
+        is3D : false};
+     plot${c.formatview} = new calypso.tlm.LineChart(document.getElementById('fullchart${c.formatview}'),'${c.formatview}',plotattrs);
+%for mon in c.monitors:
+%if len(mon.attrs())==1 and mon.attrs()[0]==mon.get_name():
+     plot${c.formatview}.addMonitor(new calypso.tlm.visualizationMonitor("${mon.get_name()}"),"${mon.get_name()}","${mon.get_name()}","${mon.get_id()}");
+%else:
+%for  attr in mon.attrs():
+     plot${c.formatview}.addMonitor(new calypso.tlm.visualizationMonitor("${mon.get_name()}.${attr[0]}"),"${mon.get_name()}","${attr[0]}","${mon.get_id()}.${attr[1]}");
+%endfor
+%endif
+%endfor
+    if (${c.display.get_short_name().replace(' ','_')}_ts)
+       plot${c.formatview}.start(${c.display.get_short_name().replace(' ','_')}_ts);
+//} catch (e){}
+   </script>
+</div>
+</div>
+</div>

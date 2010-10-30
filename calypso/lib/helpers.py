@@ -1,0 +1,67 @@
+"""Helper functions
+
+Consists of functions to typically be used within templates, but also
+available to Controllers. This module is available to templates as 'h'.
+"""
+# Import helpers as desired, or define your own, ie:
+#from webhelpers.html.tags import checkbox, password
+
+import string
+import re
+import urllib
+
+from formbuild.helpers import field, image_button, radio_group
+from formbuild import start_with_layout as form_start, end_with_layout as form_end
+from webhelpers.html.tags import *
+from webhelpers.html.tags import stylesheet_link
+from webhelpers.html.tags import link_to
+from webhelpers.html import literal as literalweb
+
+def literal(*args, **kargs):
+    print literalweb(*args, **kargs)
+    return literalweb(*args, **kargs)
+
+from calypso.tlm import Format
+
+import routes
+from routes import url_for as url_for
+import calypso.config.routing
+#from calypso.controllers import *
+#import calypso.controllers.tutorial
+
+withtitles=True
+
+def construct_link(name,*args, **kargs):
+    try:
+        _mapping= pylons.config['routes.map'].match(url_for(*args, **kargs))
+        exec('import calypso.controllers.' + _mapping['controller'] + ' as m')
+        _ctrlr=_mapping['controller']
+        _classname=_ctrlr[0].capitalize() + _ctrlr[1:] + 'Controller'
+        _doc = eval('m.'+ _classname+'.' + _mapping['action']).__doc__
+        if _doc==None:
+            _doc=''
+    except:
+        _doc=''
+        action_url=''
+    if not(withtitles):
+        _doc=''
+    _prefix=''
+    _suffix=''
+    action_url= _prefix + url_for(*args,**kargs) #"/tutorial/tutor/%s/%s/1"%(_ctrlr,_mapping['action'])
+    if kargs.has_key('override_name'):
+        override_name=kargs['override_name']
+    else:
+        override_name=''
+    return literal("<a id='"+ calypso.controllers.tutorial.escape(name)+"' href='"+_prefix+url_for(*args,**kargs)+_suffix+"' title='"+ re.sub('\s\s+',' ',_doc) +"'>"+name+"</a>")
+
+
+requestedurl=''
+
+#from calypso.lib.base import BaseController, render
+
+
+import pylons
+import calypso.config.configuration
+#import calypso.controllers.tutorial
+
+from pylons import url

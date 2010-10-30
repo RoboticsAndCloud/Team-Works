@@ -1,0 +1,240 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<%inherit file="/base/interaction.html"/>
+
+<%def name="head()">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"></meta>
+   <title>Calypso</title>
+   <link rel="stylesheet" href="/css/Calypso.css" type="text/css" media="all" /> 
+  %if c.theme!="":  
+  <link rel="stylesheet" href="/css/${c.theme}/jquery-ui-1.8.4.custom.css" type="text/css" media="all" /> 
+  %else:
+  <link rel="stylesheet" href="/css/default/jquery-ui-1.8.4.custom.css" type="text/css" media="all" /> 
+  %endif
+
+ 
+</%def>
+
+
+<%def name="heading()">
+  
+  <div  id='main_menubar' class="ui-state-default" style='padding: 5px 0px 5px 0px'>
+       <!-- Titlebar to identify what the user is currently editing -->
+      <h2 class='ui-state-active title_bar' style='padding:0;margin:0;width:90%'>
+       Welcome, ${c.user}!  Select an acton below.
+      
+      <select  style='float:right' id='theme_selection'>
+        <option value='default' >Default</option>
+        <option value='tartan'>Tartan</option>
+        <option value='smoothness2'>Smoothness</option>
+        <option value='obsidian' >Obsidian</option>
+        <option value='goldenwheat'>GoldenWheat</option>
+        <option value='buckeye'>Buckeye</option>
+      </select><label style='float:right'>Theme:</label>
+       </h2>
+      
+  
+  </div>
+</%def>
+  
+
+<%def name="body()">
+   <style>
+   img{
+    width:100px;height:100px;padding:30px 0 20px 10px
+   }
+   .ui-widget-content{
+     opacity:0.9
+   }
+   .ui-widget-content:hover{
+   }
+   
+    .operationtitle:hover{
+      opacity:1.0;
+      cursor:pointer
+   }
+  
+   </style>
+    <style>
+   .button{
+   height:30px;   
+   border: 2px outset buttonface;
+   background-color:buttonface;
+   -webkit-appearance: push-button;
+   cursor:pointer;
+   }
+   .cancel_button{   
+   background:url(/icons/removeX.png) no-repeat;
+   background-color:buttonface;
+    padding: 0 5px 0 30px;
+   }
+   
+   .operationbox{
+   overflow:hidden;position:relative;display:block;height:170px;width:70%;margin:10px 0 0 50px;
+   min-width:490px;
+   }
+  </style>
+  <div id='new_project_div'
+       class='ui-widget-content action operationbox' 
+       >
+    <div style='display:inline'>
+      <img  src='/icons/new_project.png'></img>
+    </div>
+    <div style='position:absolute;top:0px;display:inline;width:490px;font-weight:bold;padding:10px 0 0 10px'
+         class='operationtitle' onclick='toggle_form("new_project")'>
+      <h3 style='font-size:120%;padding:0 0 0 0; margin: 0 0 0 0'>Create a new top-level project from scratch.</h3>
+      <p style='padding:0px 0 0px 20px'>Start here if you are just
+      beginning the project.  You will be asked 
+      for some basic information.  Once created, any number of work activities 
+      can be created against the project. 
+      </p>
+    </div>
+    <div id='new_project_form' class='menu_extra'  style='display:none' >
+     <hr></hr>
+      ${h.form(h.url(controller='Main',action='new_project'), method='post')}
+      <div style='display:inline-block;padding-left:10px'>
+        <p>${h.field('Project Name')} ${h.text('project_name',size=80)}</p>
+        <p>${h.field('Contract Number')} ${h.text('contract_id',size=100)}</p>
+        ${h.field('Type of Project')} <select  id='project_type_select'>
+          <option value='None' select='select'>None</option>
+          <option value='None' select='select'>None2</option>
+        </select>
+        <input type='hidden' id='project_type' name='project_type' value=''></input>
+        <p>${h.submit('Submit','Submit')} 
+       
+     </div>
+      ${h.end_form()}
+    </div>
+  </div>
+ 
+  
+   <div id='new_workbook_div' class='ui-widget-content action operationbox'
+       
+   >
+    <div style='display:inline'>
+      <img  src='/icons/workbook.png'></img>
+    </div>
+    <div class='operationtitle' style='min-height:170px;height:170px;position:absolute;top:0px;display:inline;width:450px;font-weight:bold;padding:10px 0 0 10px'
+          onclick='toggle_form("new_workbook")'>
+      <h3 style='font-size:120%;padding:0 0 0 0; margin: 0 0 0 0'>Begin a new work activity on an existing project.</h3>
+        <p style='padding:0px 0 0px 20px'> 
+          The work activity will create a workbook that will allow you to 
+          view, comment on, and track updates artifacts associated with the project. 
+        </p>
+    </div>
+    <div id='new_workbook_form' class='menu_extra'  style='display:none' >
+        <hr></hr>
+          ${h.form(h.url(controller='Main',action='new_workbook'), method='post')}
+          ${h.field('Project')}<select id='workbook_project_select'>
+            %for project in c.projects:
+            <option id='${c.projects[project].get_name()}' value='${c.projects[project].get_name()}'>${c.projects[project].get_name()}</option>
+            %endfor
+          </select><p/>
+          ${h.field('Work Activity Name')}
+          ${h.text('workbook_name',size=80)}<p/>
+          ${h.submit('Submit','Submit')} 
+          <input type='hidden' id='workbook_project_name' name='workbook_project_name' value=''></input>
+           ${h.end_form()}
+        </div>
+    </div>
+   </div>
+ 
+ 
+   <div id='select_workbook_div' class='ui-widget-content action operationbox'>
+     <div style='display:block;height:100px'>
+       <div style='display:inline'>
+         <img style='width:100px;height:100px;padding:10px 0 0 10px' src='/images/work_activity.png'></img>
+       </div>
+       <div style='position:absolute;top:0px;display:inline;width:450px;font-weight:bold;padding:10px 0 0 10px'
+            class='operationtitle'
+            onclick='toggle_form("select_workbook")'>
+         <h3 style='font-size:120%;padding:0 0 0 0; margin: 0 0 0 0'>Return to a previous work activity.  </h3>  
+         <p style='padding:0px 0 0px 20px'>Select from recent work activities or view all work activities for this project</p> 
+       </div>
+    </div>
+    <div id='select_workbook_form' class='menu_extra' style='display:none'>
+      <hr/>
+    
+      <label>Recent Work Activities:</label>
+      
+    </div>
+    
+   </div>
+  <!-- SPACER TO KEEP BODY PROPERSIZE AND BACKGROND DISPLAY CORRET  -->
+  <img style='display:inline;z-index:3;height:100%;width:0px' src=''></img>
+  
+  <!--  set up client-side behavior -->
+  <script>
+
+  
+  var mode = 'none';
+  function cancel( no_animate){
+   
+  }
+
+  var hover_enabled=true;
+  $('.action').hover(function(){
+           if(hover_enabled) $(this).css('opacity',1);},
+           function(){if(hover_enabled) $(this).css('opacity',0.9);});
+  function set_enabled( enabled ){
+	  hover_enabled=enabled;
+	  
+  }
+ 
+  function toggle_form(id){ 
+	$('.menu_extra').css('display','none'); 
+	    
+    if (mode!=id){
+  
+      set_enabled(false);
+      mode=id;
+      $('#'+id + '_form').css('display','block');
+      $('#'+id + '_div').animate({opacity:0.9,height:350});
+      $('.action[id!='+id+'_div]').animate({opacity:0.3,height:150});
+      
+    } else {
+        $('.menu_extra').css('display','none'); 
+        $('.action').animate({opacity:0.9,height:150});
+        set_enabled(true);
+        mode='none';
+     }
+   
+   }
+
+ 
+  
+  String.prototype.startsWith = function(str) 
+  {return (this.match("^"+str)==str)}
+
+  
+  $(document).ready(function(){
+
+	  $('#theme_selection').change(function(){
+	      hrefs=location.href.split('&theme');
+	      address=location.href.split('?');
+	      if (address[0]==location.href || address[1].startsWith('theme')) {
+	          location.href=address[0]+"?theme=" + $(this).val();
+	      } else{
+	         hrefnew=hrefs[0];           
+	         location.href=hrefnew + '&theme=' + $(this).val();
+	      }
+	 });
+
+		 
+  %if c.mode!='':
+	 toggle_form("${c.mode}");
+  %else:
+	  set_enabled(true);	 
+  %endif
+  $('#project_type').attr('value',$('#project_type_select').val());
+  $('#project_type_select').change(function(){
+      $('#project_type').attr('value',$(this).val());
+  });
+  });
+
+  $('#workbook_project_name').attr('value',$('#workbook_project_select').val());
+  $('#workbook_project_select').change(function(){
+      $('#workbook_project_name').attr('value',$(this).val());
+  });
+  
+  </script>
+</%def>

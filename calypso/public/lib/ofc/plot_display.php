@@ -1,0 +1,99 @@
+<script type="text/javascript" src="js/json/json2.js"></script>
+<script type="text/javascript" src="js/swfobject.js"></script>
+<script type='text/javascript' src='js-ofc-library/open_flash_chart.js'></script>
+<script>
+
+
+var data_1 = {
+  "elements": [
+    {
+      "type": "line",
+      "colour":    "#736AFF",
+      "text":"none",
+        "values": [
+        19,
+        8,
+        7,
+        6,
+        5,
+        4,
+        -3
+      ]
+    },
+    {
+      "type": "line",
+      "text":"none2",
+      "colour": "#FFFFFF",
+      "values": [
+        1,
+        3,
+        4,
+        6,
+        3,
+        -2,
+        -1
+      ]
+    }
+  ],
+  "title": {
+     "text": "Thu Aug 06 2009",
+     "style": "{color:#FFFFFF}"
+   },
+  "y_axis": {  "colour":"#888888", "grid-colour":"#888888", "min": -5, "max": 20, "steps": 5 } ,
+  "x_axis": { "offset":30,"colour":"#888888","grid-colour":"#888888","min": 0, "max": 10, "steps": 1} ,
+  "bg_colour":"#666677",
+  "x_legend":{"text":"x legend","style":"{font-size:20px;color:#778877}"},
+  "x_label":{"style":"{color:#FF8888}"}
+};
+
+</script>
+
+
+<html>
+<head>
+
+<script type="text/javascript">
+swfobject.embedSWF("open-flash-chart.swf", "my_chart", "350", "200", "9.0.0");
+</script>
+
+<script type="text/javascript">
+
+function ofc_ready()
+{
+}
+
+function open_flash_chart_data()
+{
+    return JSON.stringify(data_1);
+}
+
+function load_1()
+{
+  tmp = findSWF("my_chart");
+  x = tmp.load( JSON.stringify(data_1) );
+}
+
+
+function findSWF(movieName) {
+  if (navigator.appName.indexOf("Microsoft")!= -1) {
+    return window[movieName];
+  } else {
+    return document[movieName];
+  }
+}
+    
+
+</script>
+
+
+</head>
+<body>
+
+<p>Open Flash Chart</p>
+
+
+<div id="my_chart"></div>
+<br>
+<a href="javascript:load_1()">display data_1</a> 
+</body>
+</html>

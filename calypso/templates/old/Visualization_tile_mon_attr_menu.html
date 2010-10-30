@@ -1,0 +1,37 @@
+    <div id='${c.monitor.get_name()}_details' class='attribute_display'
+        style='display:block'>
+       <div name='${c.monitor.get_name()}'
+       %if c.context!='properties':
+          class='monitor_draggable'  style='background-color:silver;cursor:url(/icons/grab.png),pointer'
+       %else:
+          class='menucategory'
+       %endif
+       >
+         <a href="javascript:expanded=$('#properties_menu_${c.monitor.get_name()}').css('display');$('.properties_attr_menu').css('display','none');if(expanded=='block') $('#properties_menu_${c.monitor.get_name()}').css('display','none'); else $('#properties_menu_${c.monitor.get_name()}').css('display','block');">${c.monitor.get_name()}</a>           
+       </div>
+       <div id='properties_menu_${c.monitor.get_name()}' class='properties_attr_menu' 
+         style='display:none'>
+       
+          <input type='submit' align='center' value='Update' onclick="update_monitor_attrs('${c.selected_tile.tile.get_name()}', '${c.monitor.get_name()}')"></input>
+          <input type='submit' align='center' value='Remove' onclick="if(confirm('Remove this monitor and all attributes?'))remove_monitor('${c.selected_tile.tile.get_name()}', '${c.monitor.get_name()}');"></input>
+       <div id='monitor_attributes_selection' 
+         style='overflow:auto;height:100pt'  >
+ %for attr in c.monitor.attrs():
+          <li style='list-style-type:none'>
+            <input type='checkbox' 
+            %if c.monitorview==None or c.monitorview.contains(attr):
+                  checked='true'
+            %endif
+                  class='${c.monitor.get_name()}_attrchecked'
+                  name='${attr[0]}'
+                  id='${c.monitor.get_name()}_${attr[1]}_active' 
+                  onchange="ischecked=$('#${c.monitor.get_name()}_${attr[1]}_active')[0].checked;if(!ischecked)$('#${c.monitor.get_name()}_allselect')[0].checked=false;">
+            </input><label>${attr[0]}</label>
+         </li>    
+         
+%endfor             
+          </div> 
+       </div>
+    </div>
+  
+   

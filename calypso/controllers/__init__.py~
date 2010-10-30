@@ -1,0 +1,60 @@
+
+import calypso.lib.base
+import calypso.lib.helpers
+
+    
+class BaseController(calypso.lib.base.BaseController):
+
+    class Action:
+
+
+        def __init__(self, action, linkname, *args, **kargs):
+            self.name = action
+            self.linkname = linkname
+            self.params = dict()
+            for index in kargs:
+                self.params[index] = kargs[index]
+
+        def url_for(self, controller):
+            calypso.lib.helpers.url_for( controller = controller,
+                                         action = self.name,
+                                         params = self.params)
+                
+    class ActionList:
+
+        def __init__(self,name):
+            self.name = name
+            self.actions=[]
+            
+        def add_action(self, action, linkname, *args, **kargs):
+            self.actions.append(BaseController.Action(action,linkname,*args, **kargs))
+
+    class TaskCategory:
+
+        def __init__(self, title, image):
+            self.title = title
+            self.image = image
+            self.actionlists = []
+            self.actiondict = {}
+            
+        def add_actionlist(self, name):
+            actionlist = BaseController.ActionList(name)
+            self.actionlists.append( actionlist )
+            self.actiondict[name] = actionlist
+            return actionlist
+            
+            
+    user = None
+
+        
+    def add_task(self, title, image):
+        task = BaseController.TaskCategory(title, image)
+        self.tasks.append( task)
+        self.taskdict[title] = task
+        return task
+
+    def __init__(self):
+        self.tasks = []
+        self.taskdict = {}
+
+        

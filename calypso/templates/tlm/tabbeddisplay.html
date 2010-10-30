@@ -1,0 +1,9 @@
+<div id='telemetrytabs' name='telemetrytabs'>
+  <ul id="tabs">
+%for tab in c.tabs:
+    <li id="${tab.name}_tab" name='${tab.name}_tab' class='tabs'><a href="${h.url_for(controller='Scenario',action='display',scenario=c.scenario,version=c.version,tab=tab)}">${tab}</a></li>
+%endfor
+  </ul>
+
+
+</div>

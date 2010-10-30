@@ -1,0 +1,114 @@
+
+    <style type="text/css">
+    #feedback { font-size: 1.4em; }
+    #monitor_list .ui-selecting { background: #FECA40; }
+    #monitor_list .ui-selected { background: #F39814; color: white; }
+    #monitor_list_sortable { list-style-type: none; margin: 0; padding: 0; width: 60%; }
+    #monitor_list_sortable li { margin: 0 3px 3px 3px; padding: 0.4em; padding-left: 1.5em; font-size: 1.4em; height: 18px; }
+    #monitor_list_sortable li span { position: absolute; margin-left: -1.3em; }
+    
+    .title{text-align:center;padding:0px;margin:0px}
+    .title-content{text-align:center;padding:10px}
+    .fixed-content{overflow:auto;height:100%;display:block}
+    </style>
+   
+     <link rel="stylesheet" href="../../../public/lib/farbtastic/farbtastic.css" type="text/css" media="all" /> 
+    
+    
+    
+  <div id='main_tile_editor' style='position:relative;height:100%;width:70%' class='ui-widget-content window'>
+    <h2 class='ui-state-active ' style='text-align:center;padding:0;margin:0 auto 0 auto'>Tile Editor
+      <input type='submit' onclick='calypso.tlm.tile_editor.commit_changes()' value='Commit'
+             style='float:right'></input>
+      <input type='submit' onclick='calypso.tlm.tile_editor.cancel_changes()' value='Cancel'
+             style='float:right'></input>
+    </h2>      
+    <div class=''ui-widget-content' style='position:relative;display:block;height:90%;width:100%;'>
+        <div style='display:inline-block;height:100%;width:65%;position:absolute;top:0;padding:0;margin:0'>
+           <div id='tile_canvas' class='ui-widget-display'
+                title='Drag monitors to this blacnk canvas to append; drag them to the list below to insert into an existing list'
+                style='overflow:auto;height:60%;margin:0px;padding:0px'>
+           </div>
+           <div id='tile_canvas_drop'   title='Drag monitors to this blacnk canvas to append; drag them to the list below to insert into an existing list'
+                style='position:absolute;top:0;left:0;height:55%;width:90%;margin:0;padding:0;z-index:10'>
+           </div>
+      
+           <h3 class='ui-widget-header' style='padding:0;margin:0'>Content & Properties 
+             <div style='float:right'>
+               <label>Display Type: </label>
+               <select id='plot_type_selection'>
+               </select>
+             </div>
+           </h3> 
+           <div style='display:block;height:40%;min-height:250px;margin:0px;padding:0px;border:2px solid black'>
+              <div id='tile_editor_tabs' style='height:100%'>
+                 <ul>
+                 <li><a href="#monitor_list_tab"><span>Monitor List</span></a></li>
+                 <li><a href="#props_tab"><span>Display Properties</span></a></li>
+               </ul>
+                <div id='monitor_list_tab' style='height:80%'>
+                 <div id="monitor_list" style='height:100%;display:block' class="fixed-content monitor_listNOT monitor_list_sortable">
+                 </div>
+          
+              <!--   <img id='tab_spacer' src='/icons/removeX.png' style='float:left;width:0%;height:100%;z-index:2'></img>
+             -->
+               </div>
+               <div id='props_tab' class='ui-widget-content'  style='height:80%'>
+                 <div style='display:inline-block;width:65%;height:100%;margin:0;padding:0'>
+                    <div  id='properties_ui' class='fixed-content' style='padding:0;margin:0'>
+                    </div>
+                 </div>
+                 <div id='prop_candy'  style='width:35%;float:right;z-index:201'>
+              
+                 </div>
+                </div>
+              </div>   
+              <!-- 
+             <img src='/icons/removeX.png' style='float:left;width:0%;height:100%;z-index:2'></img>
+               -->
+          
+            </div>
+        </div>
+        <div id='monitor_selection' class='ui-widget-content'
+            style='display:inline-block;padding:0;margin:0;height:100%;width:34%;position:absolute;top:0;left:66%'>
+              <div style='width:100%;height:85%'>
+               <h2 class='ui-widget-header' style='margin:0;padding:0'>Monitor Selection List</h2>
+  
+               <div id='monitor_list_all' class='ui-widget-content' style='display:block;height:85%'>
+                  <ul>
+                    <li><a href="#A_to_F_tab" ><span>A to H</span></a></li>
+                    <li><a href="#G_to_M_tab" ><span>G to M</span></a></li>
+                    <li><a href="#N_to_S_tab"><span>N to S</span></a></li>
+                    <li><a href="#T_to_Z_tab"><span>T to Z</span></a></li>
+                  </ul>
+                  <div id='A_to_F_tab' class='monitor_list' style='overflow:auto;height:85%;width:87%'></div>
+                  <div id='G_to_M_tab' class='monitor_list' style='overflow:auto;height:85%;width:87%'></div>
+                  <div id='N_to_S_tab' class='monitor_list' style='overflow:auto;height:85%;width:87%' ></div>
+                  <div id='T_to_Z_tab' class='monitor_list' style='overflow:auto;height:85%;width:87%'></div>
+               </div>
+        
+            </div>
+            <div id='tile_description' class='ui-state-highlight' style='height:15%;min-height:150px'>    
+                 
+      
+              </div>
+      
+       </div>
+     
+         
+           
+   </div>
+                 
+            <script>       
+  
+        
+ 
+         for (item in calypso.tlm){     
+             if (item.lastIndexOf('Visualization')>0){
+                 name=item.substr(0,item.lastIndexOf('Visualization'));
+                 calypso.tlm[item].classname=item;
+                 $('#plot_type_selection').append($('<option id="'+item+'" value="'+item+'">'+name+'</option>'));
+             }             
+         }
+            </script>
+   </div>

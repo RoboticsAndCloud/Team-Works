@@ -1,0 +1,44 @@
+<%namespace file="user_fields.html" name="user_fields" import="*"/>
+<div style='background-color:tan;padding:5pt;margin:5pt'>
+    <h2 class="main">Database Backup Archive</h2>
+<hr>
+<h3>Scheduling</h3>
+${h.form_start(h.url_for(controller='administration', action='archive_database'), method="post")}
+   ${h.field( "Archive Name Prefix",
+      h.text(name='archive_prefix',value='Calypso_Database_Archive'),
+      required=True)}
+   ${h.field( "Schedule backup",
+     h.radio_group(name="schedule",
+                  options=[[0,'Daily'],[1,'Weekly'],[2,'Monthly']],
+    value='1'),
+    required=True)}
+   ${h.field( "At time",
+    h.radio_group(name="tod",
+                  options=[[12,"12 o'clock"],[2,"2 o'clock"],[4,"4 o'clock"],[6,"6 o'clock"] ,[8,"8 o'clock"] ,[10,"10 o'clock"]],
+    value='12',
+    align='vert'),
+    required=True)}
+   ${h.field( "In the",
+    h.radio_group(name="ampm",
+                  options=[['am',"a.m."],['pm',"p.m."]] ,
+                    value='am'),
+    required=True)}
+  </tbody>
+  </table>
+    <hr/>
+    <h3>E-mail Outgoing Notification</h3>
+    <p>This information will be used to send a notification to all users that the system will be unavailable during the backup. </p>
+    <table>
+      <tbody>
+	${h.field( "SMTP outbound username",
+	h.text(name='smtp_username',value=h.calypso.config.configuration.smtp_username),
+	required=True)}
+	${h.field( "SMTP outbound password",
+	h.password(name='smtp_password'),
+	required=True)}
+</tbody>
+</table>
+<hr/>
+    ${h.submit(name='submit',value='Schedule Backup')}  ${h.submit(name='submit',value='Backup Now!')}
+${h.form_end()}
+</div>

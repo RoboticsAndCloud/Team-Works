@@ -1,0 +1,93 @@
+<div id='${c.name}' name='${c.name}' class='format_table_view'>
+  <table border=2  class='displayname' width='100%' valign='top'>
+     <tbody width='100%'>
+%for monitor in c.monitors:
+        
+  %if c.properties.Monitor_Name_as_Title()=='true':
+  <tr>
+    <td colspan='2' align='center'>
+      <div style='height:3px;max-height:3px;background-color:black;width:100%'> </div>
+       %if len(monitor.attrs())>1:
+      <b><i>${monitor.get_name()}</i></b>
+      %endif
+    </td>
+   </tr>
+     %if len(monitor.attrs())==1:
+   <tr>
+	  <td id='${monitor.get_id()}_tag' name='${monitor.get_id()}_tag' align='left' style='align:left;font-size:95%'>
+	     ${monitor.get_name()}
+	  </td>
+      <td style='font-size:95%;width:80%;background-color:black'>
+         <b name='${monitor.get_id()}_value' id='${monitor.get_name()}_value' 
+            style='background-color:black;color:lightgreen'>-----------------</b>
+      </td>
+   </tr>
+    %else:
+       %for attr in monitor.attrs():
+   <tr>
+	 <td id='${monitor.get_id()}.${attr[1]}_tag' name='${monitor.get_id()}.${attr[1]}_tag' 
+	     align='left' style='align:left;font-size:95%'>
+	    ${attr[0]}
+	 </td>
+     <td style='width:80%;background-color:black'>
+       <b name='${monitor.get_id()}.${attr[1]}_value' id='${monitor.get_id()}.${attr[1]}_value' 
+          style='background-color:black;color:lightgreen'>-----------------</b>
+     </td>
+   </tr>
+       %endfor
+    %endif
+  
+  %else:
+    %if len(monitor.attrs())==1:
+      <tr>
+	    <td id='${monitor.get_id()}_tag' name='${monitor.get_id()}_tag' align='left' style='align:left;font-size:95%'>
+	      ${monitor.get_name()}
+	    </td>
+        <td style='font-size:95%;width:80%;background-color:black'>
+           <b name='${monitor.get_id()}_value' id='${monitor.get_id()}_value' 
+              style='background-color:black;color:lightgreen'>-----------------</b>
+        </td>
+     </tr>
+    %else:
+      %for attr in monitor.attrs():
+       <tr>
+	     <td id='${monitor.get_id()}.${attr[1]}_tag' name='${monitor.get_id()}.${attr[1]}_tag' align='left' style='font-size:95%'>
+	       ${monitor.get_name()}.${attr[0]}
+	     </td>
+         <td style='font-size:95%;width:80%;background-color:black'>
+           <b name='${monitor.get_id()}.${attr[1]}_value' id='${monitor.get_id()}.${attr[1]}_value' 
+              style='background-color:black;color:lightgreen'>-----------------</b>
+         </td>
+       </tr>
+     %endfor
+    %endif
+  %endif
+
+%endfor
+%if len(c.monitors)==0:
+  <tr>
+    <td colspan='2' align='center'>
+      <b><i>Example: Drag items from menu here to add monitors</i></b>
+    </td>
+  </tr>
+  <tr>
+	<td  align='left' style='align:left;font-size:95%'>
+	       Placeholder
+	</td>
+    <td style='width:80%;background-color:black'>
+        <b style='background-color:black;color:lightgreen'>-----------------</b>
+    </td>
+  </tr>
+  <tr>
+	 <td  align='left' style='align:left;font-size:95%'>
+	       Placeholder2
+	 </td>
+     <td style='width:80%;background-color:black'>
+        <b style='background-color:black;color:lightgreen'>-----------------</b>
+     </td>
+  </tr>
+ 
+%endif
+     </tbody>
+  </table>
+</div>

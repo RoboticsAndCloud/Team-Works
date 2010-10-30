@@ -1,0 +1,54 @@
+<div id='${c.formatview}_graphic' name='${c.formatview}' class='monitor_graphic' align='center'
+    style='width:${c.properties.Width()};height:${c.properties.Height()}' >
+  
+<script type="text/javascript">
+calypso.tlm.${c.formatview}_Controller= function(parent){
+
+	 var that=new Tile_Properties_Controller_Proxy(${c.x_pos},${c.y_pos});
+	    
+     that.parent=parent;
+    
+     plotattrs=new Array();
+     plotattrs = {ymin:${c.properties.Min_Value()},
+        ymax : ${c.properties.Max_Value()},
+        width : ${c.properties.Width()},
+        height : ${c.properties.Height()},
+	    isStacked : true,
+        is3D : true};
+     that.plot = new calypso.tlm.BarChart( parent[0], '${c.formatview}', plotattrs,true);
+     %for mon in c.monitors:
+       %if len(mon.attrs())==1 and mon.attrs()[0]==mon.get_name():
+     that.plot.addMonitor(new calypso.tlm.visualizationMonitor("${mon.get_name()}"),"${mon.get_name()}","${mon.get_name()}","${mon.get_id()}");
+       %else:
+         %for  attr in mon.attrs():
+     that.plot.addMonitor(new calypso.tlm.visualizationMonitor("${attr[0]}"),"${mon.get_name()}","${attr[0]}","${mon.get_id()}.${attr[1]}");
+         %endfor
+       %endif
+     %endfor
+
+%if len(c.monitors)==0:
+     that.plot.addMonitor(new calypso.tlm.visualizationMonitor("Example"),"Placeholder1","Placeholder1");
+     that.plot.addMonitor(new calypso.tlm.visualizationMonitor("Example"),"Placeholder2","Placeholder2");
+%endif
+
+
+     that.draw=function(){	 
+       this.plot.attrs.width=${c.properties.Width()};
+       this.plot.attrs.height=${c.properties.Height()};
+       this.plot.drawChart();
+     };
+
+    that.setVisible=function(visible){
+       this.plot.setVisible(visible);
+    };
+
+    that.clone = function(parent){
+        return  new calypso.tlm.${c.formatview}_Controller(parent);
+      };
+
+    return that;
+};
+   </script>
+</div>
+</div>
+</div>

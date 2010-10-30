@@ -1,0 +1,37 @@
+"""Routes configuration
+
+The more specific and detailed routes should be defined first so they
+may take precedent over the more generic routes. For more information
+refer to the routes manual at http://routes.groovie.org/docs/
+"""
+from pylons import config
+from routes import Mapper
+
+def make_map():
+    """Create, configure and return the routes Mapper"""
+    map = Mapper(directory=config['pylons.paths']['controllers'],
+                 always_scan=config['debug'])
+    map.minimization = False
+
+    # The ErrorController route (handles 404/500 error pages); it should
+    # likely stay at the top, ensuring it can always be resolved
+    map.connect('/error/{action}', controller='error')
+    map.connect('/error/{action}/{id}', controller='error')
+
+    # CUSTOM ROUTES HERE
+    
+    map.connect('/{controller}/{action}')
+    map.connect('/{controller}/{action}/{id}')
+    map.connect('/tutorial/{action}',controller='tutorial')
+    map.connect('/tutorial/tutor/{primary_controller}/{primary_action}/{id}',controller='tutorial',action='tutor')
+    map.connect('/tutorial/speak/{primary_controller}/{primary_action}/{id}',controller='tutorial',action='speak',id=1)
+    map.connect('/tutorial/speak/{primary_controller}/{id}',controller='tutorial',action='speak',id=1)
+    map.connect('/tutorial/speak_current/{id}',controller='tutorial',action='speak_current',id=1)
+    map.connect('/tutorial/speak_item/{id}',controller='tutorial',action='speak_item')
+    map.connect('/Scenario/view/{id}',controller='Scenario', action='view')
+    map.connect('/Scenario/start/{scenario}/{version}/{id}',controller='Scenario', action='start')
+    map.connect('/Scenario/stop/{scenario}/{version}/{id}',controller='Scenario', action='stop')
+    map.connect('/Scenario/load/{scenario}/{version}/{id}',controller='Scenario', action='load')
+    map.connect('/Scenario/launch/{scenario}/{version}/{id}',controller='Scenario', action='launch')
+    map.connect('/Scenario/display/{scenario}/{version}/{display}/{tab}/{id}',controller='Scenario', action='display')
+    return map

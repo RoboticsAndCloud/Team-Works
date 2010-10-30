@@ -1,0 +1,241 @@
+<%inherit file="/base/interaction.html"/>
+<%def name="breadcrumbs()">
+</%def>
+
+<%def name="head()">
+<link rel='stylesheet' type='text/css' href='/css/Calypso.css' />
+     %if c.theme!="":  
+       <link rel="stylesheet" href="/css/${c.theme}/jquery-ui-1.8.4.custom.css" type="text/css" media="all" /> 
+     %else:
+       <link rel="stylesheet" href="/css/default/jquery-ui-1.8.4.custom.css" type="text/css" media="all" /> 
+     %endif
+
+<div class='ui-widget-content' style='position:absolute;width:100%;height:100%;top:0;left:0;z-index:1001' 
+     id='progress_area'>
+       <h1>Loading...</h1>
+       <div id="progressbar" class='ui-widget-active' style='width:100%;height:20px'></div>
+</div>
+</%def>
+
+<%def name="heading()">
+   
+  <div  id='main_menubar' class="ui-state-default" style='padding: 5px 0px 5px 0px'>
+       <!-- Titlebar to identify what the user is currently editing -->
+      <h2 class='ui-state-active title_bar' style='padding:0;margin:0;width:100%'>
+       Now Editing : <label id='document_name' style='font-size:110%'>${c.display.get_short_name()}</label>
+       %if c.display.get_name()!='unnamed':
+       <a href='?display=unnamed'>New</a>
+       %endif
+      <div style='display:inline-block'>
+        <a href="#" style='font-size:80%' class='upbtn'>Save As...</a>
+      <input class='ui-state-active' style='position:absolute;z-index:10;display:none;min-width:150px' id='saveasinput'></input>
+     
+      </div>
+      <select  style='float:right' id='theme_selection'>
+        <option value='default' >Default</option>
+        <option value='tartan'>Tartan</option>
+        <option value='smoothness2'>Smoothness</option>
+        <option value='obsidian' >Obsidian</option>
+        <option value='goldenwheat'>GoldenWheat</option>
+        <option value='buckeye'>Buckeye</option>
+      </select><label style='float:right'>Theme:</label>
+       </h2>
+      
+  
+  </div>
+ 
+</%def>
+
+
+<%def name="body()">
+       <!-- for processing SGML: needed anymore? -->
+      <script type='text/javascript' src='http://www.google.com/jsapi'></script>
+ 
+ 
+      <!--  calypso specifics -->
+      <script src="/lib/tlm/visualization.js"></script>
+      <script src="/lib/tlm/telemetryStream.js"></script>
+      <script src="/lib/tlm/controller_client.js"></script>
+      <script src="/lib/tlm/visualization_controller.js"></script>
+      <script src="/lib/tlm/tile_controller.js"></script>
+      <script src="/lib/tlm/menu_controller.js"></script>
+      <script src="/lib/tlm/controller_client.js"></script>
+      <script src="/lib/tlm/tile_editor.js"></script>
+
+      <script src="/lib/farbtastic/farbtastic.js" type="text/javascript"></script> 
+ 
+    
+      <div id='root' name='root' style='position:relative;display:inline;height:100%;width:100%'>
+    
+          <div style='display:inline-block;margin:0 0 0 0;width:20%;height:100%' 
+               name='palette_menu'  id='palette_menu' class='taskbar' >
+             <div style='position:relative;top:0px;margin:0 0 0 auto;height:100%'>
+                <%include file="/tlm/develop/Visualization-palette_menu.html" />
+             </div>
+          </div>
+        
+          <div id='display_root' style='display:inline-block;width:70%;height:100%;min-height:200px ; position:relative;margin: 0 0 0 auto'>
+            <div id='main_display' name='main_display' syle='width:100%;margin:0 0 0 auto'>
+            <%include file="/tlm/develop/Visualization-main.html" />
+            </div>
+        
+          </div>
+       </div>
+
+    
+     <div style='background-color:transparent;width:100%;height:100%;position:absolute;top:0;left;0;display:none;z-index:10' >
+         <canvas id='shadowbox' width='5000px' height='5000px' style='display:none;z-index:0;position:absolute;top:0;left:0'><h1>YIKES</h1></canvas> 
+      </div>
+       <div style='display:none;z-index:500;opacity:0.99;width:100%;
+                  height:100%; position:absolute;top:0;left:0' 
+              id='tile_editor_frame' 
+              name='tile_editor_frame'  >
+              <!--  This will hold the elements to create the shadow effect when the tile editor is active -->
+          <%include file='/tlm/develop/Visualization-editor.html'/>
+               
+ 
+         </div>
+   
+
+     <div style='z-index:700;position:absolute;top:0;left:0;display:none;background-color:silver;border-width:3;border-style:outset;height:100px'
+        id='name_query'>
+       <div align='right'>
+          <a href="javascript:$('#name_query').css('display','none')" style='border-width:1;border-style:groove'><b>X</b></a><p/>
+       </div>
+       <form action='' onsubmit="menu_controller.submit_rename($('#display_name_input')[0].value); return false">
+         <label>New Display Name: </label>  <input id='display_name_input' type='text' maxlength='32' length='20' value='${c.name}'></input>
+         <input type='submit' value='Submit'></input>
+       </form>
+    </div>
+
+</%def>
+
+<%def name="footer()">
+<div style='display:none' id='all_monitors_alphabetical'>
+  <div style='display:block;width:100%' id='all_monitor_selection_menu' >
+              %for monitor in c.all_monitors:
+              <h4 id='${monitor.get_name()}' class='monitor_draggable' style='background-color:white;padding:0px;margin:0px;float:left;position:relative;left:0px;display:block'>
+                 ${monitor.get_name()}[${len(monitor.attrs())}]
+              </h4>   
+               <img src='/icons/grab.png' style='height:0px;padding:0px;margin:0px;width:90%'></img><!--  No visual here, but ensure one item per line -->
+           
+              %endfor
+        
+              
+   </div>
+  
+</div>
+
+        <!-- This is used to setup the list of current monitors for the tile editor.  It is based on 
+              the div item having a list of all monitors at its disposal, with the responsibility of the
+              tile editor to set visible only those elements that are currently in the display tile.  This
+              is to keep operations on keeping the current monitor list up-to-date without having to resort to 
+              server side calls to refresh the current monitors list on each user operation -->
+         <div align='left' id='current_monitor_list' style='display:none;overflow:auto'>
+         <ul>
+             %for monitor in c.all_monitors:
+               <li class='current_monitor_heading' '
+                   id='Editor_${monitor.get_name()}_current_item' 
+                   style='display:none;padding:2px;margin:0px;'>
+               <a href='#' onclick='calypso.tlm.tile_editor.remove_monitor("${monitor.get_name()}");$("#Editor_${monitor.get_name()}_current_item").css("display","none");'>
+                 <img src='/icons/removeX.png' style='border:none;height:20px'/>
+                 %if len(monitor.attrs())>1:
+                 <a href='#' onclick='calypso.tlm.tile_editor.generate_attr_selection("${monitor.get_name()}",true)'>  
+                    <img src='/icons/properties.png' style='border:none;height:20px'/>
+                 </a>
+                 %endif
+               </a>${monitor.get_name()}[${len(monitor.attrs())}]
+          </li>
+       
+             %endfor
+             </ul>
+         </div>
+<!-- ================================================
+     We track monitors on the client side directly, and are set up here:
+     ================================================ -->
+<script>
+  $('option[value=${c.theme}]').attr('selected','selected');
+  monitors={};
+  calypso.tlm.tiles={}
+
+  $(document).ready(function(){
+
+	  $('a.upbtn').click(function(){
+		    $(this).toggleClass("downbtn");
+	        if ($(this).is('.downbtn')){
+	             $('#root').css('opacity',0.3);
+	             $('#saveasinput').css('display','block');
+	        } else {
+	            $('#saveasinput').css('display','none');
+	             $('#root').css('opacity',1.0);
+	             
+	        }
+	        return false;
+	    });
+	  $('#saveasinput').change(function(){
+		  if ($(this).val()=='') return;	
+		  $(this).css('display','none');
+		  	 
+		  calypso.tlm.display=$(this).val();
+		  visualization_controller.save_as(
+				  $(this).val(), 
+				  function(){$('#saveasinput').css('display','none'); 
+				              $('#document_name').text(calypso.tlm.display);
+				              $('#root').css('opacity',1.0);
+				              $('a.upbtn').removeClass('downbtn');
+				              $('a.upbtn').addClass('upbtn');});
+	   });
+	   $('document').css('height',$(window).height());
+	   $('#tile_editor_frame').css('height',$(window).height());
+	      $('#display_root').css('top',-$('#display_root').offset().top+50);
+	  
+	   $('#theme_selection').change(function(){
+		   hrefs=location.href.split('&theme');
+		   hrefnew=hrefs[0];		   
+          location.href=hrefnew + '&theme=' + $(this).val();
+      });
+   
+   var ${c.display.get_name()}_ts;
+       try{
+            calypso.tlm.session_configuration={
+                    configuration:"${c.configuration}",
+                    scenario : "${c.scenario}",
+                    display : "${c.display.get_name()}"
+            };
+            visualization_controller= new Visualization_Controller_Proxy( '${c.display.get_short_name()}', '${c.configuration}', '${c.scenario}');
+            menu_controller = new Menu_Controller($('#main_menu'),visualization_controller);
+            calypso.tlm.tile_editor=new calypso.tlm.Tile_Editor(  $('#all_monitor_selection_menu'), $('#current_monitor_list'));
+            selected_tab='${c.selected}';      
+            visualization_controller.set_up_drag_and_drop();
+            count=0;
+            target_count=${len(c.all_monitors)};
+             $('#progressbar').progressbar({value:1});
+            $('#progressbar').css('display','block');     
+            if (!monitors) monitors={};       
+            $('#loading').attr('src','/Visualization/initialize?configuration=${c.configuration}&display='+calypso.tlm.session_configuration.display+
+                    '&tab='+visualization_controller.selected_tabname()+
+                    '&scenario=${c.scenario}');
+      } catch(e) {
+          alert("ERROR CREATING CONTROLLER: " + e);
+      }
+      //$('#root').css('opacity', 1.0);
+      //$('#progressbar').css('display','none');
+         
+    
+  });
+ 
+</script>
+<!--   
+This is used for a comet connection to load the database and present progress to the user.  
+It is also used as a spacer to ensure proper page/background height.
+ -->
+<iframe id='loading' style='display:inline;float:right;border:none;width:0px;top:0;z-index:22' >
+
+</iframe>
+</%def>
+
+<%def name="title()">
+Calypso: ${c.scenario}
+</%def> 
+
+  

@@ -1,0 +1,55 @@
+<%inherit file="/base/index.html"/>
+<%def name="body()">
+<div align='center' style='width:100%;background-color:tan;padding:20pt'>
+<h2>Select a scenario</h2>
+<hr></hr>
+<h3>From Currently Active Sessions:</h3>
+%if len(c.activescenarios)>0:
+<table border='2'>
+  <thead>
+    <tr align='center'>
+       <td colspan='2'><b>Scenario</b></td>
+    </tr>
+  </thead>
+  <tbody>
+%for scenario in c.activescenarios:
+   <tr>
+     <td><img href='${h.url_for(controller='Scenario',action='img',scenario=scenario) }'></img></td>
+     <td>
+       <a href='${h.url_for(controller='Scenario', action='connect')}/${scenario}/1}'>${scenario}</a>
+     </td>
+   </tr>
+%endfor
+</tbody>
+</table>
+%else:
+<p>[No active sessions present]</p>
+%endif
+
+
+<h3>Launch New Session:</h3>
+<table border='2'>
+  <thead>
+    <tr align='center'>
+       <td colspan='2'><b>Scenario</b></td>
+    </tr>
+  </thead>
+  <tbody>
+%for scenario in c.scenariolist:
+   <tr>
+     <td><img href='${h.url_for(controller='Scenario',action='img',scenario=scenario) }'></img></td>
+     <td><a href="javascript:document.location='${h.url_for(controller='Scenario', action='load',id=None)}/${scenario}/1'">${scenario}</a>
+     </td>
+   </tr>
+%endfor
+</tbody>
+</tbale>
+
+
+  </tbody>
+</table>
+</div>
+${c.content}
+</%def>
+<%def name="footer()">
+</%def>

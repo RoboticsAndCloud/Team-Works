@@ -1,0 +1,28 @@
+  <div id='${c.formatview}_graphic' name='${c.formatview}' class='monitor_graphic' align='center' style='width:${c.properties.Width()};height:${c.properties.Height()}' >
+   <div id='chart${c.formatview}' style='overflow:hidden;'>
+     <div id='fullchart${c.formatview}'  >
+<script type="text/javascript">
+$(document).ready(function(){
+    plotattrs=new Array();
+    plotattrs = {maxlength:${c.properties.Time_Span()},ymin:${c.properties.Min_Value()},
+		 ymax : ${c.properties.Max_Value()},
+		 width : ${c.properties.Width()},
+		 height : ${c.properties.Height()},
+		 is3D : false};
+    plot${c.formatview} = new calypso.tlm.AreaChart(document.getElementById('fullchart${c.formatview}'),'${c.formatview}',plotattrs);
+%for mon in c.monitors:
+%if len(mon.attrs())==1 and mon.attrs()[0]==mon.get_name():
+    plot${c.formatview}.addMonitor(new calypso.tlm.visualizationMonitor("${mon.get_name()}"),"${mon.get_name()}","${mon.get_name()}","${mon.get_id()}");
+%else:
+%for  attr in mon.attrs():
+    plot${c.formatview}.addMonitor(new calypso.tlm.visualizationMonitor("${mon.get_name()}.${attr[0]}"),"${mon.get_name()}","${attr[0]}","${mon.get_id()}.${attr[1]}");
+%endfor
+%endif
+%endfor
+  if(${c.display.get_short_name().replace(' ','_')}_ts)
+     plot${c.formatview}.start(${c.display.get_short_name().replace(' ','_')}_ts);
+		  });
+   </script>
+</div>
+</div>
+</div>

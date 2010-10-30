@@ -1,0 +1,5 @@
+database_host="localhost"
+database_port=3306dd
+database_name="Calypso"
+smtp_host="smtpauth.earthlink.net"
+smtp_username="john.rusnak@mindspring.com"

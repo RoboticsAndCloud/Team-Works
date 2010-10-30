@@ -1,0 +1,48 @@
+<div id='${c.formatview}_graphic' name='${c.formatview}' class='monitor_graphic' align='center' 
+     style='width:${c.properties.Width()};height:${c.properties.Height()}' >
+   <div id='chart${c.formatview}' style='width:100%;height:100%;'>
+     <div id='fullchart${c.formatview}'  >
+<script type="text/javascript">
+tile_controllers['${c.x_pos},${c.y_pos}'].createGUI=function(){
+     plotattrs=new Array();
+     plotattrs = {
+    	width : ${c.properties.Width()},
+        height : ${c.properties.Height()},
+        legendFontSize:12,
+        legend:'label',
+        is3D : false};
+     this.plot=new calypso.tlm.PieChart(document.getElementById('fullchart${c.formatview}'),'${c.formatview}',plotattrs);
+//     plot${c.formatview} = 
+     %for mon in c.monitors:
+        %if len(mon.attrs())==1 and mon.attrs()[0]==mon.get_name():
+        	this.plot.addMonitor(new calypso.tlm.visualizationMonitor("${mon.get_name()}"),"${mon.get_name()}","${mon.get_name()}","${mon.get_id()}");
+        %else:
+          %for  attr in mon.attrs():
+     this.plot.addMonitor(new calypso.tlm.visualizationMonitor("${mon.get_name()}.${attr[0]}"),"${mon.get_name()}","${attr[0]}","${mon.get_id()}.${attr[1]}");
+          %endfor
+        %endif
+     %endfor
+     %if len(c.monitors)==0:
+     this.plot.addMonitor(new calypso.tlm.visualizationMonitor("Click + to add monitors","Placeholder","Click + to add monitors", ""));
+     this.plot.addMonitor(new calypso.tlm.visualizationMonitor("Click + to add monitors","Placeholder2","Click + to add monitors", ""));
+     %endif
+}
+
+tile_controllers['${c.x_pos},${c.y_pos}'].draw=function(width, height){
+	  this.plot.attrs.width=width;
+      this.plot.attrs.height=height;
+      this.plot.drawChart();
+}
+
+tile_controllers['${c.x_pos},${c.y_pos}'].setVisible=function(visible){
+  this.plot.setVisible(visible);
+}
+
+
+
+tile_controllers['${c.x_pos},${c.y_pos}'].createGUI();
+if(${c.display.get_short_name().replace(' ','_')}_ts)
+   plot${c.formatview}.start(${c.display.get_short_name().replace(' ','_')}_ts);
+
+ </script>
+</div></div></div>

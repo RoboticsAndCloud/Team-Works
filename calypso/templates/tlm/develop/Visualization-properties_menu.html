@@ -1,0 +1,63 @@
+<%def name='properties_dialog(x_pos, y_pos)'>
+<hr/>
+<h3>Selected Tile</h3>
+<p/>
+<b><i>Basic Properties</i></b>
+<form action="" onsubmit="tile_controllers[''+${x_pos}+','+${y_pos}].update_tile_basic_properties();return false;">
+  <table>
+    <tbody>
+      <tr>
+        <td> 
+          <label>Name:</label>
+        </td>
+        <td>
+          <input class='tile_basic_property' id='property:tile_name' name='property:tile_name' type='text' value='${c.window.tiles[y_pos][x_pos].tile.get_name()}'/>
+        </td>
+      </tr>
+      <tr>
+	 <td>
+           <hr style='width:40pt'/>
+           <b><i>Visualization Properties</i></b>
+    <div id='properties_addl' name='properties_addl'>
+      </td>
+      <tr>
+  %for property in c.window.tiles[y_pos][x_pos].tile.properties.paramlist:
+         <tr>
+    %if property['param'].type()=='boolean':
+           <td><label>${property['name'].replace('_',' ')}:</label></td>
+           <td>
+              <input 
+      %if property['param']()=='true' or property['param']()=='True':
+               checked='true'
+      %endif
+               class='tile_property' id='${property['name']}' name='property:${property['name']}' type='checkbox' value='${str(property['param']())}' size='5' maxlength='5'>
+               </input>
+           </td>
+    %else:
+           <td><label>${property['name'].replace('_',' ')}:</label></td>
+           <td>
+             <input  class='tile_property' id='${property['name']}' name='property:${property['name']}' type='text' value='${property['param']()}'
+%   if property['param'].type()=='string':
+		size='10'
+%   else:
+		size='5' maxlength='5'
+%   endif
+>
+             </input>
+           </td>
+    %endif
+         </tr>
+  %endfor
+       </tbody>
+     </table>
+     <div align='center'>
+       <input type='submit' value='Update'/>
+     </div>
+    <input type='hidden' name='configuration' id='configuration' value='${c.configuration}'/>
+    <input type='hidden' name='scenario' id='scenario' value='${c.scenario}'/>
+    <input type='hidden' name='tab' id='tab' value='${c.selected}'/>
+    <input type='hidden' name='x_pos' id='tile_x_pos' value='${c.selected_tile.properties.x_pos()}'/>
+    <input type='hidden' name='y_pos' id='tile_y_pos' value='${c.selected_tile.properties.y_pos()}'/>
+  </form>
+
+</%def>

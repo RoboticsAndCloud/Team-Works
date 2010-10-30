@@ -1,0 +1,294 @@
+
+
+   
+
+
+
+<div id='display_windows' name='display_windows' style='display:block;position:relative'>
+ 
+  <div style='height:100%;width:80%;' id='tabbed_display'>
+ <div>
+  <ul id='tlm_tabs'>
+      %for tab in c.tabs:
+       <li  id="${tab.get_name()}_tab" name='${tab.get_name()}'>
+           <a class='tabornament-left tab_name' href="#tab_${tab.get_name()}" id="${tab.get_name()}_ref" >${tab.get_name()}
+           <a  class='tabornament-right' href="javascript:if(confirm('Really delete all content in this tab?')) visualization_controller.remove_tab('${tab.get_name()}');"><b>X</b></a></a>
+       </li>
+       %endfor
+       <li id="+add_new" name="+add_new" class='addnewtab'>
+           <a href="javascript:visualization_controller.add_new_tab()"><b>+</b></a>
+       </li>
+  </ul>
+  </div>
+       %for tab in c.tabs:
+    
+        <!--   if tab.get_name()==c.selected:  -->
+       <!-- main display -->
+      <div id='tab_${tab.get_name()}' name='tab_${tab.get_name()}' class='ui-widget-content' style='border:2px solid sliver;padding:0;margin:0'>
+      <!-- an internal table to layout the display components -->
+         <table border='2'  class='ui-widget-content' style='margin:0;padding:0'>
+            <tbody style='width:100%;height:100%'>
+              %for y_pos in range(len( tab.tiles )):
+              <tr style='width:100%;height:100%'>
+                 %for  x_pos in range(len(tab.tiles[y_pos])):
+                    %if tab.tiles[y_pos][x_pos]==None:
+                 <!-- display a drop component if nothing assigned to this tile -->
+                 <td style='width:100%;height:100%;border:10;z-index:0' class='tile_receiver empty_tile_receiver'
+                      x_pos='${x_pos}' y_pos='${y_pos}' >
+                    <div align='center' id='empty_tile${y_pos}_${x_pos}' class='ui-widget-contentNOT'>
+                      <i><img src='/icons/droparrow.png' opacity='0.3'  title='Drop tile palette items here.' /></i>                          
+                    </div>
+                 </td>
+                 
+                    %else:
+                 
+                 <!-- display populated tile -->
+                 <td   style='positionNOT:relative;width:${tab.tiles[y_pos][x_pos].properties.Width()}px;height:${tab.tiles[y_pos][x_pos].properties.Height()}px'' 
+                       class='tile_receiver ui-widget-contentNOT' 
+                       id='${tab.tiles[y_pos][x_pos].tile.get_name().replace(' ','_')}'  
+                       valign='top' align='center' 
+                        style='border-right-width:0px;
+                              position:relaitve;
+                              width:${tab.tiles[y_pos][x_pos].properties.Width()};
+                              height:${tab.tiles[y_pos][x_pos].properties.Height()}'
+                       rowspan='${tab.tiles[y_pos][x_pos].properties.row_span()}' 
+                       colspan='${tab.tiles[y_pos][x_pos].properties.col_span()}'     
+                       x_pos="${x_pos}" 
+                       y_pos="${y_pos}">
+                        <!--  ======================================
+                             image displayed when drag and drop operation is active, to 
+                             show where to place tile to swap with the dragged tile
+                             ====================================== -->
+                         <div align='center' class='tile_receiver_img' 
+                              id='${tab.tiles[y_pos][x_pos].tile.get_name().replace(' ','_')}_droppable' 
+                              style='position:relative;z-index:20;width:100%;height:100%;opacity:0.3;display:none'  >
+                           <img src='/icons/swap.png' style='padding:auto auto auto auto;z-index:22;position:absolute;top:100px;left:100px;' title='Drop tile palette items here.'/>
+                         </div>
+                      <!--  ======================================
+                            Display grabber for drag and drop operations
+                            ====================================== 
+                     <div style='position:absolute;z-index:12'>
+                        <div class='tile_draggable'  x_pos="${x_pos}"  y_pos="${y_pos}"  tileclass='${tab.tiles[y_pos][x_pos].tile._model.get_type()}' >
+                           <img src='/icons/grab.png' />
+                         </div>
+                     </div>-->
+                        
+     
+                   <div style='position:relative;float:right;width:100px;'>
+                       <!--  ======================================
+                             Display for control of tile span 
+                             ====================================== -->
+                     <div  id='${tab.tiles[y_pos][x_pos].tile.get_name().replace(' ','_')}_span_controller' 
+                           class='operationbox ui-state-hover'  style='left:50px'
+                           title='Change the column span of this cell' > 
+                         <h3 class='tile_reducer' ><a style='text-decoration:none;color:black;' href="javascript:visualization_controller.reduce_tile_colspan(${x_pos},${y_pos});">&#9664;</a></h3>
+                         <i id='${tab.get_name()}_spanner_${x_pos}_${y_pos}' style='font-size:70%'>span:${tab.tiles[y_pos][x_pos].properties.col_span()}</i>
+                         <h3 class='tile_expander'><a style='text-decoration:none;color:black;' href="javascript:visualization_controller.expand_tile_colspan(${x_pos},${y_pos});">&#9654;</a></h3>
+                     </div> 
+                           
+                     <!--  ======================================
+                           Display of cotnrols to update or remove tile
+                           ====================================== -->
+                     <div id='${tab.tiles[y_pos][x_pos].tile.get_name().replace(' ','_')}_tile_operations' 
+                          class='operationbox ui-state-hover'  >
+ 
+                          <!-- Link used as button to invoke the properties dialog for a tile -->
+                          <a title='Configure the display properties of this tile' 
+                             href="javascript:show_properties_dialog($('#chart_${tab.get_name()}_${x_pos}_${y_pos}'),${x_pos},${y_pos});" >
+                            <img  class='popup_toggle_menu' id='${tab.tiles[y_pos][x_pos].tile.get_name().replace(' ','_')}_propscfgr' src='/icons/properties.png'style='border:0'/>
+                          </a>
+
+                          <!--  Link used as button to remove a tile -->
+                          <a title='Remove this tile'  href="javascript:if (confirm('Really remove this tile and all its monitors?')) 
+                                         visualization_controller.remove_tile({x_pos:${x_pos}, y_pos:${y_pos}});">
+                            <img   src='/icons/removeX.png' style='border:0'/>
+                          </a>
+ 
+                     </div>
+                   </div>                      
+                     <!--  ======================================
+                          Main tile display
+                           ====================================== -->
+                       
+                  
+<!-- SPACER -->                   
+ 
+
+    
+    <div id='tile_dragger' style='display:none;position: relative ;z-index:2;width:100%;height:100%;opacity:0.3;background:white' classd='tile_draggable'>
+     
+    </div>
+    <div style='position:relative'   x_pos="${x_pos}" y_pos="${y_pos}" >
+     <div id='chart_${tab.get_name()}_${x_pos}_${y_pos}' 
+           x_pos="${x_pos}" y_pos="${y_pos}" class='tile_display sizer tile_draggable' >
+        
+    <script>
+      $(document).ready(function(){    
+          element=$('#chart_${tab.get_name()}_${x_pos}_${y_pos}');
+          visclass=get_visualization_class('${tab.tiles[y_pos][x_pos].tile.get_type()}');
+          drawable=new visclass(element,"",{});
+               
+          element[0].drawable=drawable;
+          tileid='${tab.get_name()}_${x_pos}_${y_pos}';
+        %for monitor in tab.tiles[y_pos][x_pos].tile.monitors():          
+          delete attrlist;
+          attrlist={};
+          %for attr in monitor.attrs():
+          attrlist['${attr[0]}']='${attr[0]}';
+          element[0].drawable.add_monitor('${monitor.get_name()}','${attr[0]}');
+          %endfor
+        %endfor
+          display_properties={}    
+       %for key,prop in tab.tiles[y_pos][x_pos].properties.params.iteritems():
+          display_properties['${key}']='${prop()}';
+       %endfor
+          element[0].drawable.set_display_properties(display_properties);
+            element[0].drawable.draw_chart();
+          if (!calypso.tlm.windows) calypso.tlm.windows={}
+          if (!calypso.tlm.windows['${tab.get_name()}']) calypso.tlm.windows['${tab.get_name()}']={drawables : new Array(0)};
+          calypso.tlm.windows['${tab.get_name()}'].drawables.push(element[0].drawable);
+       });
+         
+     </script>
+     </div>
+             </div>
+  
+             
+                   
+             
+                  </td>
+                    %endif
+                  %endfor
+                  %if tab.rowcount > 0:
+                    %for index in range(len(tab.tiles[y_pos]),tab.colcount+1):
+                   <td align='center' valign='middle' style='width:100%;height:100%;border:10;z-index:0' class='tile_receiver empty_tile_receiver'    
+                        x_pos='${index}' y_pos='${y_pos}' >
+                      <div align='center' valign='bottom'  >
+                        <i valign='middle'><img src='/icons/droparrow.png' title='Drop tile palette items here.'  /></i>
+                      </div>
+                        <div>
+                       
+                      </div>
+                
+                   </td>
+                   %endfor
+                  %endif 
+                 </tr>
+               %endfor
+
+               %if len(tab.tiles) > 1 or (len(tab.tiles)==1 and len(tab.tiles[0])!=0) or (len(tab.tiles)==0):
+                 <tr >
+                 %for index in range(tab.colcount+1):
+                   <td align='center' valign='middle' style='width:100%;height:100%;border:10;z-index:0' class='tile_receiver empty_tile_receiver'     x_pos='${index}' y_pos='${len(tab.tiles)}' >
+                      <div align='center' valign='bottom'  >
+                        <i valign='middle'><img src='/icons/droparrow.png' title='Drop tile palette items here.'  /></i>
+                      </div>
+                      %if len(tab.tiles)==0:
+                        <p>To begin, drag elements from the tile palette here.</p>    
+                      %endif                  
+                   </td>
+                 %endfor
+                </tr>
+              %endif
+              </tbody>
+             </table>
+    </div>
+       
+       %endfor
+    </div>
+  
+   </div>
+   
+  
+         
+   <script>
+     
+     
+     function show_properties_dialog( canvas, x_pos, y_pos ){ 
+         tileid=x_pos + "_" + y_pos;
+         canvas_offset_top=canvas.parent().offset().top;
+         canvas_offset_left=canvas.parent().offset().left;
+         
+         $('.operation, operationbox').css('display','none');
+         
+         shadowbox=$('#shadowbox');
+         
+         ctx=shadowbox[0].getContext('2d');
+         tef=$('#main_tile_editor');
+         tef.css('opacity',0.0);
+         tef.css('display','block');
+         $('#tile_editor_frame').css('display','block');
+         tef.parent().css('display','block');
+         $('#tile_editor_tabs').height($('#tab_spacer').height()+150);
+         
+         tef_right=tef.width();
+         tef_btm=tef.height();
+         target_right=tef_right+200;
+         target_top=200;
+         target_btm=target_top+canvas.height();
+         lineargradient = ctx.createLinearGradient(tef_right, 0,target_right,tef_btm);  
+         lineargradient.addColorStop(0,'white');  
+         lineargradient.addColorStop(1,'black');  
+         ctx.fillStyle=lineargradient;
+         ctx.stokeStyle='0,0,0';
+         ctx.beginPath();
+         ctx.moveTo( tef_right,0);
+         ctx.lineTo( target_right, target_top);
+         ctx.lineTo( target_right, target_btm);
+         ctx.lineTo( tef_right, tef_btm);
+         ctx.lineTo( tef_right,0);
+         ctx.fill();     
+         ctx.closePath();
+         ctx.beginPath();
+         ctx.moveTo( tef_right, tef_btm);
+         ctx.lineTo ( target_right, target_btm);
+         ctx.lineTo ( target_right - canvas.width(), target_btm);
+         ctx.lineTo ( 0, target_btm);
+         ctx.lineTo ( target_right, target_btm);
+         ctx.fill();    
+         ctx.closePath();
+         
+         shadowbox.css('opacity',0.0);
+         shadowbox.css('display','block');
+         shadowbox.parent().css('display','block');
+         $('#monitor_list_all').tabs("destroy");
+         $('#monitor_list_all').tabs();
+         $('#tile_editor_tabs').tabs("destroy");
+         $('#tile_editor_tabs').tabs({ fx: { opacity: 'toggle' } });
+         $('#tile_editor_tabs').css('height',$('#tile_editor_tabs').height()+150);
+
+         offset={ left: (target_right - canvas.width()) - canvas_offset_left,
+                  top : target_top - canvas_offset_top};
+         calypso.tlm.tile_editor.set_drawable(canvas[0].drawable, x_pos, y_pos);      
+         $('#root').animate({top:'+='+offset.top,left:'+='+offset.left,opacity:0.3},1000, function(){
+                  
+             });
+         tef.animate({opacity:0.99},2000);
+         shadowbox.animate({opacity:0.75});
+	  }
+
+
+      $('#tabbed_display').tabs({ 
+         select: function(event, ui) {
+           var tabname = ui.panel.id.replace('tab_','');   
+           calypso.tlm.selected_tab=tabname;
+       
+       //     if(tabname=='${c.selected}') return true;
+         
+           if(ui.index==${len(c.tabs)}){
+              visualization_controller.add_new_tab();
+          } 
+           if(calypso.tlm.windows && calypso.tlm.windows[tabname])
+        	  for (index in calypso.tlm.windows[tabname].drawables){
+        	    calypso.tlm.windows[tabname].drawables[index].draw_chart();
+        	   }
+           return true;
+           }
+      
+    });
+    $('#tabbed_display').tabs("select","tab_${c.selected}");
+   
+</script>
+
+         
+ 

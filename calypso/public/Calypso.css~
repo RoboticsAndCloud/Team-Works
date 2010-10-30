@@ -1,0 +1,34 @@
+body{
+  background-image:url('icons/background.png');
+}
+
+
+div#headbox{
+  background-image:url('icons/main-titlebar.png');
+  height:45;
+  width:240;
+  color:tan;
+  margin:0;
+  padding:0;
+  position:relative;
+}
+
+div#taskbox{
+  margin:0;
+  background-color:white;
+  padding:10;
+  position:relative;
+}
+
+div#mainbox{
+  padding:20;
+}
+
+div#displayboxoutlined{ 
+text-align:center;
+}
+
+div#login{ 
+  background-color:tan;
+  padding:20;
+ }

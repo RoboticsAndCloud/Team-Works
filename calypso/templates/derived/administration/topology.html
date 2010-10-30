@@ -1,0 +1,30 @@
+<h2 align='center'>List of Available Assets</h2>
+<div  style='background-color:tan'>
+<table id='dualblcok' border='0pt,1pt'>
+<tbody><tr><td><div style='margin:20pt;border:1pt' >
+  <%include file='asset_form.html' />
+</div>
+</td>
+<td>
+<table cellmargin='20pt' >
+  <thead>
+    <tr style='color:black;font-weight:bold;font-size:16px' align='center'><td colspan='3' >Asset</td><td colspan='2'>&nbsp; &nbsp;Action</td></tr>
+   <tr><td colspan='4'><hr/></td></tr>
+  </thaed>
+  <tbody>
+% if len(c.hosts) == 0:
+<tr><td colspan='4'><h2 style='color:tan'>No Assets Are Currently Defined</h2></td></tr>
+%endif
+% for item in c.hosts:
+   <tr style='font-size:16px'>
+     <td  colspan='3' style='padding:10pt'><a href='${h.url_for(controller='administration',action='edit_host',hostaddr=item.host,port=item.port)}'>${item.name}@${item.host}:${item.port}</td>
+     <td>&nbsp; &nbsp;<a href='${h.url_for(controller='administration',action='delete_hostentry',name=item.name)}'>Delete</a></td>
+   </tr>
+% endfor
+  </tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+</div>

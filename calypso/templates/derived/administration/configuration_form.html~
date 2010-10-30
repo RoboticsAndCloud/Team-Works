@@ -1,0 +1,31 @@
+<%namespace file="user_fields.html" name="user_fields" import="*"/>
+
+    <h2 class="main">Database Settings</h2>
+<hr>
+<h3>Server</h3>
+${h.form_start(h.url_for(controller='administration', action='set_configuration'), method="get")}
+   ${h.field( "Database host",
+      h.text(name='database_host',value=h.calypso.config.configuration.database_host),
+      required=True)}
+   ${h.field( "Database port",
+      h.text(name='database_port',value=h.calypso.config.configuration.database_port),
+      required=True)}
+   ${h.field( "Database name",
+      h.text(name='database_name',value=h.calypso.config.configuration.database_name),
+      required=True)}
+</tbody>
+</table>
+<hr/>
+<h3>Notifications</h3>
+<table>
+<tbody>
+   ${h.field( "SMTP outbound host",
+      h.text(name='smtp_host',value=h.calypso.config.configuration.smtp_host),
+      required=True)}
+   ${h.field( "SMTP outbound username",
+      h.text(name='smtp_username',value=h.calypso.config.configuration.smtp_username),
+      required=True)}
+</tbody>
+</table>
+  ${h.submit(name='submit',value='Update Configuration')}
+${h.form_end()}

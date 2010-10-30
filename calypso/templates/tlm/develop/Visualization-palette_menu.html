@@ -1,0 +1,47 @@
+<div class='ui-widget-header headbox' name='Tile_palette_Title'>
+  <h2 align='center' style='margin-top:5'>
+     <img padding='5pt' src='/icons/palette.png' height='35pt'></img>
+     Tile palette
+  </h2>
+</div>
+
+<div id='tile_palette_menu'  style='position:relative;top:0;height:100%' >
+  %for menu in c.palette_menus:
+ 
+     <h3 style='z-index:20' class='ui-state-active'>
+         <a  class='menulink' href="#"  title='${menu.title}' expanded='true'>
+		   ${menu.title}
+         </a>
+	 </h3>        
+     <div class='image_menu' style='height:100%;min-height:410px;overflow:none'>
+     %for tileselector in menu.tileselectors:
+	   <div style='cursor:url(/icons/grab.png),pointer' 
+	      align='center'>
+	 
+              <img id='${tileselector.id}' style='height:50px;padding: 0 0 0 0;margin:0 0 0 0' tileclass='${tileselector.id}' class='empty_tile_draggable' 
+                   padding='3pt' src='/icons/${tileselector.img}' alt='${tileselector.id}' style='display:block'></img>
+         <p style='padding: 0 0 0 0;margin:0 0 0 0' >${tileselector.text}</p>
+        <hr />
+	   </div>
+     %endfor     
+    </div>
+  %endfor
+ 
+</div>
+
+<div><h2 style='opacity:0.0'>H</h2></div>
+<script>
+    $(document).ready(function(){
+	   $('#tile_palette_menu').accordion();
+	   $('#tile_palette_menu').accordion("resize");
+	   $('#tile_palette_menu').accordion({animated:false,
+		   select:function(){
+    	     $('#.image_menu').css('overflow','none'); 
+           }});
+       });
+  
+ 
+</script>
+
+
+

@@ -1,0 +1,14 @@
+<div style='background-color:tan'>
+${h.form_start(h.url_for(controller='administration', action='add_asset'), method="post")}
+   ${h.field("Name",
+      h.text(name='name',value=''),
+      required=True)}
+   ${h.field("IP Address",
+      h.text(name='ip_address',value=''),
+      required=True)}
+   ${h.field("Port",
+      h.text(name='port',value='5002'),
+      required=True)}
+    ${h.field("",h.submit(value="Add Asset >>", name='submit'))}
+${h.form_end()}
+</div>

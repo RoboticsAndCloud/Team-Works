@@ -1,0 +1,90 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<%inherit file="/base/interaction.html"/>
+
+<%def name="head()">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+   <title>Calypso</title>
+   <link rel="stylesheet" href="/css/Calypso.css" type="text/css" media="all" /> 
+  %if c.theme!="":  
+  <link rel="stylesheet" href="/css/${c.theme}/jquery-ui-1.8.4.custom.css" type="text/css" media="all" /> 
+  %else:
+  <link rel="stylesheet" href="/css/default/jquery-ui-1.8.4.custom.css" type="text/css" media="all" /> 
+  %endif
+
+ 
+</%def>
+
+
+<%def name="heading()">
+  
+  <div  id='main_menubar' class="ui-state-default" style='padding: 5px 0px 5px 0px'>
+       <!-- Titlebar to identify what the user is currently editing -->
+      <h2 class='ui-state-active title_bar' style='padding:0;margin:0;width:90%'>
+       Welcome, ${c.user}!  Select an acton below.
+      
+      <select  style='float:right' id='theme_selection'>
+        <option value='default' >Default</option>
+        <option value='tartan'>Tartan</option>
+        <option value='smoothness2'>Smoothness</option>
+        <option value='obsidian' >Obsidian</option>
+        <option value='goldenwheat'>GoldenWheat</option>
+        <option value='buckeye'>Buckeye</option>
+      </select><label style='float:right'>Theme:</label>
+       </h2>
+      
+  
+  </div>
+</%def>
+  
+
+<%def name="body()">
+<style>
+label {
+  font-size:110%;
+}
+</style>
+<div class='ui-widget-content' style='margin: auto 100px' >
+%if c.mode=='create':
+  <h2 style='text-align:center'>Enter New Project Information Below</h2>
+%else:
+  <h2 style='text-align:center'>Update Project Informaton Below</h2>
+%endif
+  <div style='margin: auto 10%'>
+  ${h.form(h.url(controller='Main',action='new_project'), method='post')}
+   
+   <div style='display:inline-block'>
+     <p>${h.field('Project Name')} ${h.text('project_name',size=100)}</p>
+     <p>${h.field('Contract Number')} ${h.text('contract_id',size=100)}</p>
+     ${h.field('Type of Project')} <select  id='project_type_select'>
+        <option value='None' select='select'>None</option>
+       <option value='None' select='select'>None2</option>
+     </select>
+     <input type='hidden' id='project_type' name='project_type' value=''></input>
+     <p>${h.submit('Submit','Submit')}</p>
+   
+  </div>
+  ${h.end_form()}
+  
+  </div>
+  </div>
+   <script>
+  $('#project_type').attr('value',$('#project_type_select').val());
+  $('#project_type_select').change(function(){
+      $('#project_type').attr('value',$(this).val());
+  });
+  </script>
+   
+  
+  <!-- SPACER TO KEEP BODY PROPERLY SIZED AND BACKGROND DISPLAY CORRECT  -->
+  <img style='display:inline;z-index:3;height:100%;width:0px' src=''></img>
+  
+  <!--  set up client-side behavior -->
+  <script>
+  $('#theme_selection').change(function(){
+      hrefs=location.href.split('&theme');
+      hrefnew=hrefs[0];           
+     location.href=hrefnew + '&theme=' + $(this).val();
+ });
+
+  </script>
+</%def>

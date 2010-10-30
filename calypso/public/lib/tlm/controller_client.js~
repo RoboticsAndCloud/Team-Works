@@ -1,0 +1,595 @@
+/**
+ * Class representing a proxy for invoking controller actions on the server side.  Each method
+ * typically invokes and AJAX call to the server and acts on a response.
+ */
+Visualization_Controller_Proxy=function( display, configuration, scenario){
+
+  this.display=display;
+  this.configuration=configuration;
+  this.scenario=scenario;
+
+  /**
+   * @private method for invoking an action through the Display controller on the server side
+   */
+  this._invoke_display_action = function( action, data , description, addl_response){
+    //we're working on it...
+    document.body.style.cursor = 'progresss';
+    //set up the standard elements of request data
+    data['display']=display;
+    data['configuration']=this.configuration;
+    data['scenario']=this.scenario;
+    if (!data['tab'])
+      data['tab']=selected_tab;
+
+    //make a call to the server and redraw the main display window with the response
+    try{
+      $.ajax({url: "/Visualization/" + action,
+		 data : (data),
+		 error : function(){
+		 alert("ERROR " + description);
+		 document.body.style.cursor = 'auto';
+	       },
+		 success : function(html){  
+		 
+		 $('#main_display').html(html);
+		 visualization_controller.set_up_drag_and_drop();
+		 //show that no tile is selected:
+		 //$('#currenttabname_field')[0].value=selected_tab;
+		 //$('#properties_addl').html('');
+		 // $('#properties_tile_name')[0].value='Click on Tile';
+		 //$('#properties_tile_name')[0].disabled='True';
+		 //$('#row_span')[0].value='No Tile Selected';
+		 //$('#row_span')[0].disabled='True';
+		 //$('#col_span')[0].value='No Tile Selected';
+		 //$('#col_span')[0].disabled='True';
+		 if (addl_response) try{addl_response()}catch(e){alert("ERROR " + description);}
+		 setTimeout("document.body.style.cursor = 'auto'",2000);
+	     }
+	   });
+    } catch (e) {
+      alert("ERROR  " + description + ": " + e);
+    }
+  }
+
+  /**
+   * invoke and action through the Tiles Properties controller on the server side
+   */
+  this._invoke_tile_action = function(action, position, selected_elem, description){
+    $.ajax({url: "/Visualization/" + action,
+	       data:( { configuration:this.configuration,
+		     scenario:this.scenario,
+		     tab:selected_tab,
+		     x_pos:position.x_pos,
+		     y_pos:position.y_pos}),
+	       success : function(html){
+	         $('.monitor_droppable').css('background-color', 'wheat');
+		 selected_elem.style.backgroundColor='#FFFFE5';
+	         $('#properties_menu').html(html);
+	     }});
+  };
+
+
+  /**
+   * Display the selected tab
+   */
+  this.select_tab = function(tabname){
+    data={tab:tabname};
+    this._invoke_display_action("select_tab",data, "selecting tab", null);
+    
+  };
+
+  /**
+   * Add a new tab with a default assigned name to the display
+   */
+  this.add_new_tab = function(){
+      this._invoke_display_action( "add_new_tab",{}, "adding new tab", null);
+  };
+
+  /**
+   * remove a tab with the given name from the display
+   */
+  this.remove_tab = function(tabname){
+    data={tab:tabname};
+    this._invoke_display_action("remove_tab", data, "removing tab " + tabname, null);
+  };
+
+
+  /**
+   * Rename the currently selected tab within the display
+   */
+  this.rename_window = function(name){
+    if (name=='' || name==null){ 
+      alert("Name cannot be empty");
+    } else {
+      this._invoke_display_action("rename_tab",{name:name},"renaming tab.  Name must be unique and non-empty", null);
+    }
+  };
+
+  /**
+   * Add a tile to the display of a given type and at a given row, col position
+   * @param position    an array indexed on x_pos and y_pos indicating the row and column respectively
+   */
+  this.append_tile = function(type, position, element){
+    data={x_pos : position.x_pos,
+	  y_pos : position.y_pos,
+          type : type};
+    this._invoke_display_action(  "append_tile", data, "adding tile", element, null, false); 
+  };
+
+
+  /**
+   * Remove a tile at the given row/column 
+   * @param  position   an array indexed on strings x_pos and y_pos indicating the row number anc
+   * column number, respectively 
+   */
+  this.remove_tile = function(position){
+    data = {x_pos : position.x_pos,
+	    y_pos : position.y_pos};
+    this._invoke_display_action("remove_tile", data, "removing tile"); 
+    try{
+      delete tile_controllers[''+position.x_pos + ',' + position.y_pos];
+    } catch (e){}
+  };
+
+  /**
+   * Select a tile within the dislpay.  This will display the proper elements
+   * in the properties menus for editing the selected tile.
+   */
+  this.select_tile = function(position, elem){
+    data = {x_pos : position.x_pos,
+	    y_pos : position.y_pos};
+    this._invoke_tile_action("select_tile", data, elem, "selecting tile"); 
+
+  }
+
+  /**
+   * Move a tile from one x_pos, y_pos (row, column) position to another
+   */
+  this.move_tile = function( from_position, to_position){
+	  data={ to_x_pos : to_position.x_pos,
+		 to_y_pos : to_position.y_pos,
+	         from_x_pos : from_position.x_pos,
+                 from_y_pos : from_position.y_pos};
+	  this._invoke_display_action(   "move_tile", data, "moving tile");
+    };
+
+
+  /**
+   * Set up all drag and drop capabilities on the display.  This must 
+   * be called on each refresh via an AJAX call to ensure newly created
+   * elements particiapte
+   */
+  this.set_up_drag_and_drop = function(){
+    //cleart out the old (may not really be necessary)
+    $(".tile_draggable, .monitor_droppable").draggable("destroy");
+    $(".tile_receiver").droppable("destroy");
+    $(".monitor_droppable").droppable("destroy");
+    $(".monitor_graphic").resizable("destroy");
+    
+       
+    //establish drag/drop for tiles within the display
+    $(".tile_draggable").draggable({
+          helper:function(){return $('#'+$(this).attr('tileclass')).clone();},
+	  start: function(event, ui) {$('.tile_receiver').css('display','block');$('.empty_tile_receiver').css('opacity',1.0); },
+	  stop: function(event, ui) {$('.tile_receiver').css('display','none'); $('.empty_tile_receiver').css('opacity',0.3);},
+	  cursorAt:{ left: 5 },
+	  zIndex:2600}); 
+    $(".empty_tile_draggable").draggable({
+          helper:function(){return $('#'+$(this).attr('tileclass')).clone();},
+	  start: function(event, ui) {$('.empty_tile_receiver').css('opacity',1.0); },
+	  stop: function(event, ui) {$('.empty_tile_receiver').css('opacity',0.3); },
+	  cursorAt:{ left: 5 },
+	  zIndex:2600}); 
+    $(".monitor_draggable").draggable({helper:'clone'});
+
+    $(".tile_receiver").droppable({ 
+      hover : 'tile_receiver_hovered',
+      accept:'.tile_draggable',
+	  drop: function(event, ui) { 
+	  elem_id=ui.draggable[0].id;
+	  if (elem_id == this.id) return;
+	  try{ from_position= eval(elem_id+'_position');}catch(e){from_position=null;}
+	  if (from_position!=null){
+	    //moving tile to another position:
+	    to_position=eval(this.id + '_position');
+	    visualization_controller.move_tile(from_position, to_position);
+	    
+	  } else {
+	    position=eval(this.id+'_position');
+	    type=ui.draggable[0].id;
+	    visualization_controller.append_tile(type, position);
+	  }
+	}
+      });
+
+
+    $(".empty_tile_receiver").droppable({ 
+      hover : 'tile_receiver_hovered',
+      accept:'.tile_draggable, .empty_tile_draggable',
+	  drop: function(event, ui) { 
+	  elem_id=ui.draggable[0].id;
+	  if (elem_id == this.id) return;
+	  try{ from_position= eval(elem_id+'_position');}catch(e){from_position=null;}
+	  if (from_position!=null){
+	    //moving tile to another position:
+	    to_position=eval(this.id + '_position');
+	    visualization_controller.move_tile(from_position, to_position);
+	    
+	  } else {
+	    position=eval(this.id+'_position');
+	    type=ui.draggable[0].id;
+	    visualization_controller.append_tile(type, position);
+	  }
+	}
+      });
+
+    //establish drag/drop for monitors
+    $(".monitor_droppable").droppable({
+         accept:'.monitor_draggable',
+	 drop: function(event, ui){ 
+    	   elem_id=ui.draggable.attr('name');
+           position=eval(this.id+'_position');      
+           filterthis=false;
+           $('.'+elem_id+'_attrchecked').each(function(index, elem){
+                if (elem.checked) data[elem.name]=elem.checked?true:false;
+                else filterthis=true;
+           });
+	   tile_controllers['' + position.x_pos + ',' + position.y_pos].append_monitor( elem_id, data);
+	   visualization_controller.select_tile(position, this);
+	 }
+      });
+    
+    //on click of a tile, select it (change back ground color and updated properties menu on right)
+    $('.monitor_droppable').click
+    ( function(){
+      position=eval(this.id+'_position');      
+      visualization_controller.select_tile(position, this);
+      }
+     );
+
+    //setup resizing of tiles:
+    $(".monitor_graphic").resizable({ 
+      start: function(event,ui){
+	  this.style.borderStyle='groove';
+	  this.style.borderColor='white';
+	  if (this.setVisible) this.setVisible(false);
+	},
+       stop: function(event, ui) {
+	  elemid=this.id; 
+	  position=eval(this.id.replace('_graphic','')+'_position');
+	  this.style.borderStyle='none';
+	  
+	  newwidth = ui.size.width;
+	  newheight = ui.size.height;
+	  
+	  data={ x_pos: position.x_pos,
+		 y_pos: position.y_pos};
+	  data['property:width'] = newwidth;
+	  data['property:height'] = newheight;
+	  tile_controllers[''+position.x_pos + ',' + position.y_pos].update_tile_basic_properties(data);
+
+	}
+	
+      });
+    
+  };
+
+
+  this.set_up_drag_and_drop();
+
+}
+
+
+
+
+
+
+
+
+
+
+/**
+ * Class representing a proxy javascript interface to the server.  Methods wil
+ * typically invoke AJAX calls to the server and redraw necessary elements via
+ * the response.
+ */
+  Tile_Properties_Controller_Proxy= function(name, x_pos, y_pos, guielem){
+
+  this.guielem=guielem;
+  this.name = name,
+  this.position={x_pos: x_pos, y_pos: y_pos};
+  this.display = visualization_controller.display;
+  this.configuration = visualization_controller.configuration;
+  this.scenario = visualization_controller.scenario;
+
+  /**
+   * @private method to invoke an action via the Tile Properties controller
+   * on the server side
+   */
+  this._invoke_tile_action = function( action, data , description, addl_response){
+    document.body.style.cursor = 'progresss';
+    data['display']=visualization_controller.display;
+    data['configuration']=this.configuration;
+    data['scenario']=this.scenario;
+    data['x_pos']=this.position.x_pos;
+    data['y_pos']=this.position.y_pos;
+    data['tab']=selected_tab;
+    try {
+      $.ajax({url: "/TileProperties/"+action,
+		 data : (data),
+                 tile:this,
+		 error : function(){
+		 alert("ERROR " + description);
+		 document.body.style.cursor = 'auto';
+	       },
+	      success : function(html){  
+		 //		 if (!update_elem)
+		 // update_elem=$('#main_display');
+		 this.tile.guielem.html(html);
+                 name=this.tile.guielem.attr('id').replace('_container','');
+		 $('#'+name+'_tile_operations').css('display','block');
+		 visualization_controller.set_up_drag_and_drop();
+ 		 if (addl_response) try{addl_response()}catch(e){alert("ERROR : " + description);}
+		 document.body.style.cursor = 'auto';
+	       }
+	     });
+    } catch (e) {
+      alert("ERROR " + description + ": " + e);
+    }
+  }
+
+
+  this._invoke_display_tile_action = function( action, data , description, addl_response){
+    document.body.style.cursor = 'progresss';
+    data['display']=visualization_controller.display;
+    data['configuration']=this.configuration;
+    data['scenario']=this.scenario;
+    data['x_pos']=this.position.x_pos;
+    data['y_pos']=this.position.y_pos;
+    data['tab']=selected_tab;
+    try {
+      $.ajax({url: "/TileProperties/"+action,
+		 data : (data),
+                 tile:this,
+		 error : function(){
+		 alert("ERROR " + description);
+		 document.body.style.cursor = 'auto';
+	       },
+	      success : function(html){  
+		 //		 if (!update_elem)
+		 $('#main_display').html(html);
+		 visualization_controller.set_up_drag_and_drop();
+ 		 if (addl_response) try{addl_response()}catch(e){alert("ERROR : " + description);}
+		 document.body.style.cursor = 'auto';
+	       }
+	     });
+    } catch (e) {
+      alert("ERROR " + description + ": " + e);
+    }
+  }
+
+
+  /**
+   * expand the associated tile to cover an additional row
+   */
+  this.expand_tilerowspan = function(){
+    this._invoke_dispay_tile_action("increment_rowspan", {}, "incrementing row span"); 
+  };
+
+  /**
+   * If greater than a single row, reduce the number of rows spanned by this
+   * tile by 1
+   */
+  this.reduce_tilerowspan = function(){
+    this._invoke_display_tile_action("decrement_rowspan", {}, "incrementing row span"); 
+  };
+
+  /**
+   * Epxand the tile to occupy an additional column
+   */
+  this.expand_tilecolspan = function(){
+    this._invoke_display_tile_action("increment_colspan", {}, "incrementing row span"); 
+  };
+
+  /**
+   * Reduce the number of columns occupied by this tile, provided it is greater
+   * than 1 (do nothing otherwise)
+   */
+  this.reduce_tilecolspan = function(){
+    this._invoke_display_tile_action("decrement_colspan", {}, "incrementing row span");     
+  };
+
+  /**
+   * Add a monitor for display within this tile
+   */
+  this.append_monitor = function(monitorname, data){
+    data['monitor']=monitorname;
+    this._invoke_tile_action("append_monitor",data, "appending monitor" );
+    
+  }
+
+  /**
+   * Update the basic properties of the tile (name, col & row span, etc.).
+   * Data is gathered form the GUI properties menu elements to send to the server.
+   */
+  this.update_tile_basic_properties = function(data){
+    if (!data || data.length == 0){
+      $.each($('.tile_basic_property'),function(index,elem){ if ( elem ){
+		 if (elem.type=='checkbox') data['property:'+elem.id]=elem.checked;
+		 else
+		   data[elem.id]=elem.value; }
+	     }); 
+    }
+    this._invoke_tile_action( "set_basic_properties",data, "updating tile properties",null);
+    return false;//do not relocate/reload window, AJAX  and js handles updates for us
+  };
+
+
+  /**
+   * update the tile properties (non-basic -- those associated with the specific
+   * type of tyle), based on menu inputs from user
+   */
+  this.update_tile_properties = function(elem){
+        
+	data={};
+	$.each($('.tile_basic_property',elem),function(index,elem){ if ( elem){
+		if (elem.type=='checkbox') data['property:'+elem.id]=elem.checked;
+		else
+			data['property:' +elem.id]=elem.value; }
+	}); 
+	this._invoke_tile_action( "set_basic_properties", data, "setting basic tile properteis", null);
+	data={};
+	$.each($('.tile_property',elem),function(index,elem){ if ( elem){
+		if (elem.type=='checkbox')
+                    data['property:'+elem.id]=elem.checked;
+		else
+		    data['property:' +elem.id]=elem.value; 
+             }
+	}); 
+	this._invoke_tile_action( "set_properties", data, "setting tile properteis", null);
+	return false;//do not relocate/reload window, AJAX  and js handles updates for us
+  };
+
+
+  /**
+   * update the monitor attrivutes associated with this tile.  This includes
+   * adding or removing attributes associated with the given monitor
+   */
+  this.update_monitor_attrs = function( monitor){
+    data={ monitorname: monitor};
+    count=0;
+ 
+    $('.'+monitor+'_tileprop_attrchecked').each
+    (
+     function(index,elem)
+     {
+       if (elem.checked){
+	 data[elem.name]=elem.name; 
+	 ++count;
+       }
+     });
+    if (count==0 && confirm("Really remove monitor from tile?")) return this.remove_monitor(monitor);
+    this._invoke_tile_action("update_monitor_attrs", data, "updating monitor attributes",null);
+  };
+
+  /**
+   * Remove a monitor from this tile
+   */
+  this.remove_monitor = function( monitor){
+    data={monitorname: monitor};
+    this._invoke_tile_action("remove_monitor", data, "removing monitor",null);
+  };
+
+  /**
+   * Display a monitor (add it) to this tile
+   */
+  this.display_monitor = function (monitorname){
+    data={monitorname: monitorname};
+    this._invoke_tile_action("display_monitor", data, "displaying monitor", $('#monitor_selection_menu'),null);
+  };
+}
+
+/**
+ * Class for controlling the overall menu (for save, delete and exit operations)
+ */
+Menu_Controller = function(vis_controller){
+  this.vis_controller = vis_controller;
+  this.display=vis_controller.display;
+  this.configuration= vis_controller.configuration;
+  this.scenario = vis_controller.scenario;
+
+  /**
+   * toggle whether submenus are shown or not
+   */
+  this.toggle_menu = function (menuid ){
+      visible=($('#menu_'+menuid)[0].expanded=='true');
+      $('.submenu').css('display','none');
+      $('.menulink').each( function(index,elem){elem.expanded='false';elem.innerHTML= '&#9654;&nbsp;'+ elem.title;});
+      if (visible){
+        $('.'+menuid + '_submenu').css('display','none');
+        $('#menu_'+menuid).html('&#9654;&nbsp;'+$('#menu_'+menuid)[0].title);
+      } else {
+        $('.'+menuid + '_submenu').css('display','block');
+        $('#menu_'+menuid).html('&#9660;&nbsp;'+$('#menu_'+menuid)[0].title);
+      }
+     $('#menu_'+menuid)[0].expanded='' + !(visible);
+    }
+
+
+  /**
+   * save the current display under a new name (from a separate user query)
+   */
+  this.save_display_as = function(){
+      $('.menu').css('display','none');
+      $('#name_query').css('display','inline');
+    }
+
+  /**
+   * Save the display (althought this is really done for free on each update)
+   */
+  this.save_display = function(){
+      this.vis_controller._invoke_display_action("save",{}, "saving display", function(){alert("Display successfully saved");});
+      $('.menu').css('display','none');
+    };
+
+  
+  this.setmenutimeout = function(){
+    setTimeout("$('.menu').css('display','none')",4000);
+  };
+  
+  /**
+   * Upon user entry of a new name for the current display, submit it to the server
+   */
+  this.submit_rename = function(name){
+    $('#name_query').css('display','none');
+    document.body.style.cursor = 'progress'; 
+    data = {configuration:this.configuration,
+	    scenario:this.scenario,
+	    tab : $('.selectedtab')[0].id.replace('_tab',''),
+	    newname: name};
+    $.ajax({
+      url:'/Visualization/copy_to',
+	  data:(data),
+	  error : function(){alert("ERROR in saving display "+data.newname);	document.body.style.cursor = 'auto'; },
+	  success:function(js){
+	    eval(js);
+	    document.body.style.cursor = 'auto';	 
+	    window.location="/Visualization/edit?configuration="+data.configuration+"&scenario="+data.scenario+"&display="+data.newname;
+	}
+	
+      }); 
+    return false;//do not reload or redirect page
+    };
+  
+  this.delete_display = function(){
+    if (confirm("Really delete all content in this display?")){
+      
+      $('#name_query').css('display','none');
+      document.body.style.cursor = 'progress'; 
+      data = {configuration:this.configuration,
+	      scenario:this.scenario,
+	      tab : $('.selectedtab')[0].id.replace('_tab',''),
+	      newname: name};
+      $.ajax({
+	url:'/Visualization/delete',
+	    data:(data),
+	    error : function(){alert("ERROR in deleting display "+this.display);	document.body.style.cursor = 'auto'; },
+	    success:function(js){
+	    eval(js);
+	    document.body.style.cursor = 'auto';	 
+	    window.location="/Visualization/edit?configuration="+data.configuration+"&scenario="+data.scenario+"&display=unnamed";
+	  }
+	  	
+      }); 
+    }
+    return false;//do not reload or redirect page
+  };
+
+  this.new_display=function(){
+    window.location="/Visualization/edit?configuration="+data.configuration+"&scenario="+data.scenario+"&display=unnamed";    
+  };
+}
+  
+visualization_controller=null;
+menu_controller=null;
+tile_controllers = new Array();

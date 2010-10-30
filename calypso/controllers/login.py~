@@ -1,0 +1,53 @@
+import logging
+
+
+from pylons import request, response, session, tmpl_context as c
+from pylons.controllers.util import abort, redirect_to
+from pylons.decorators import validate
+import formencode
+from formencode.schema import SimpleFormValidator
+
+from calypso.lib.base import BaseController, render
+import calypso.lib.helpers as h
+import calypso.users
+import hashlib
+
+log = logging.getLogger(__name__)
+
+def validate_password(value_dict, state,validator):
+    userid=value_dict['username']
+    passwd=value_dict['password']
+    user=calypso.users.User(userid,
+                            hashlib.md5(passwd).hexdigest())
+    if user.verify():
+        return {}
+    else:
+        return {'password':'Invalid password'}
+
+class LoginForm( formencode.Schema):
+    allow_extra_fields = True
+    filter_extra_feilds = True
+    username = formencode.validators.String(
+        not_empty = True,
+        messages={'empty':'cannot be empty'})
+    chained_validators=[SimpleFormValidator(validate_password)]
+    
+class LoginController(BaseController):
+
+    def view(self):
+        c.heading = "Calypso Login"
+        return render('/base/login.html')
+
+    @validate(schema=LoginForm(), form='view')
+    def login(self):
+        #Issue an HTTP redirect
+        user = calypso.users.User(self.form_result['username'],
+                                  hashlib.md5(self.form_result['password']).hexdigest())
+        calypso.users.UserSession(user)
+        response.status_int = 302
+        response.headers['location'] = h.url_for(controller='home', action='view')
+        return "LOGGED IN AS " + self.form_result['username'] + '...'
+
+    def logout(self):
+        h.uservalid=False
+        return render('/base/login.html')

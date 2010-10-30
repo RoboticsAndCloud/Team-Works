@@ -1,0 +1,6 @@
+<%inherit file="/base/index.html"/>
+<div align='center'>
+<a href='??'><img border=0 width='150' height='150' src='/icons/administer_lg.png'></img></a>
+</div>
+${c.content}
+<%def name="footer()"></%def>

@@ -1,0 +1,89 @@
+
+<script>
+   calypso.tlm.selected_tile_controller = null;
+
+   function show_hide_properties_dialog( elemname, tile_controller, configuration, scenario, tab){ 
+      vert_offset = 20;
+      properties_dialog=$('#'+elemname+'_properties_dialog');
+      if (properties_dialog.css('display')=='none'){
+      calypso.tlm.selected_tile_controller=tile_controller;
+      visualization_controller.select_tile( tile_controller.position, document.getElementById(tile_controller.name+'_container'));
+      $('#property:tile_name').attr('value',tile_controller.name);
+      $('#property:x_pos').attr('value',calypso.tlm.selected_tile_controller.position.x_pos);
+      $('#property:y_pos').attr('value',calypso.tlm.selected_tile_controller.position.y_pos);
+      $('#property:configuration').attr('value',configuration);
+      $('#property:scenario').attr('value',scenario);
+      $('#property:tab').attr('value',tab);
+      position=$('#'+elemname + '_containter').position();
+      $('#'+elemname+'_container').parent().append(properties_dialog);
+      properties_dialog.css('top', position.top + vert_offset);
+      properties_dialog.css('left', position.left);
+      properties_dialog.css('display','inline');
+    } else {
+      properties_dialog.css('display','none');
+    }
+
+   }
+</script>
+   <hr/>
+<h3>Selected Tile</h3>
+<p/>
+<b><i>Basic Properties</i></b>
+<form action="" onsubmit="selected_tile_controllers.update_tile_basic_properties();return false;">
+  <table>
+    <tbody>
+      <tr>
+        <td> 
+          <label>Name:</label></td>
+        <td>
+          <input class='tile_basic_property' id='property:tile_name' name='property:tile_name' type='text' ></input>
+        </td>
+      </tr>
+     <tr>
+          <td>
+            <hr style='width:40pt'/> 
+  	       <b><i>Visualization Properties</i></b>
+          </td>
+     </tr>
+%if c.selected_tile != None:
+  %for property in c.selected_tile.properties.paramlist:
+      <tr>
+    %if property['param'].type()=='boolean':
+         <td><label>${property['name'].replace('_',' ')}:</label></td>
+         <td>
+              <input 
+%   if property['param']()=='true' or property['param']()=='True':
+               checked='true'
+%   endif
+               class='tile_property' id='${property['name']}' name='property:${property['name']}' type='checkbox' value='${str(property['param']())}' size='5' maxlength='5'>
+               </input>
+         </td>
+    %else:
+         <td><label>${property['name'].replace('_',' ')}:</label></td>
+         <td>
+             <input  class='tile_property' id='${property['name']}' name='property:${property['name']}' type='text' value='${property['param']()}'
+%   if property['param'].type()=='string':
+		size='10'
+%   else:
+		size='5' maxlength='5'
+%   endif
+>
+             </input>
+         </td>
+    %endif
+       </tr>
+  %endfor
+%endif
+       </tbody>
+  </table>
+     <div align='center'>
+       <input type='submit' value='Update'/>
+     </div>
+    <input class='tile_basic_property' type='hidden' name='property:configuration' id='property:configuration'/>
+    <input class='tile_basic_property' type='hidden' name='property:scenario' id='property:scenario' />
+    <input class='tile_basic_property' type='hidden' name='property:tab' id='property:tab' />
+    <input class='tile_basic_property' type='hidden' name='property:x_pos' id='property:x_pos'/>
+    <input class='tile_basic_property' type='hidden' name='property:y_pos' id='property:y_pos' />
+
+  </form>
+

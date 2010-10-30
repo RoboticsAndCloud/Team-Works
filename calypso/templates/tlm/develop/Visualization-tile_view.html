@@ -1,0 +1,42 @@
+   <div  id='${c.window.tiles[c.y_pos][c.x_pos].tile.get_name().replace(' ','_')}_container' 
+         x_pos='${c.x_pos}' y_pos='${c.y_pos}'  >
+        
+</div>
+  
+ 
+<!-- SPACER -->                   
+  <div style='padding:0px;margin:0px;height:0px'>
+    <img src='/icons/${c.tile._model.get_type()}.png' style='visibility:hidden' 
+         width='${c.properties.Width()}' height='0px'/>
+  </div>
+
+
+  <div  id='${c.tile.get_name().replace(' ','_')}' x_pos="${c.x_pos}" y_pos="${c.y_pos}">
+    
+     <div id='${c.tile.get_name().replace(' ','_')}_display' x_pos="${c.x_pos}" y_pos="${c.y_pos}" class='tile_display'>
+    <!-- <%include file='${"/tlm/format_"+c.tile._model.get_type()+"_view.html"}'/> -->
+       
+     </div>
+    <script>
+    tileid='${c.selected}_${c.x_pos}_${c.y_pos}';
+     // if (!calypso.tlm.tiles) calypso.tlm.tiles={};
+     // if (!calypso.tlm.tiles[tileid]) calypso.tlm.tiles[tileid]={}
+      
+      calypso.tlm.tiles[tileid].monitors={};
+      %for monitor in c.window.tiles[c.y_pos][c.x_pos].tile.monitors():          
+      delete attrlist;
+      attrlist={};
+        %for attr in monitor.attrs():
+      attrlist['${attr[0]}']='${attr[0]}';
+      element.tile_drawable("add",{monitorname: '${monitor.get_name()}',
+                                   attrname : '${attr[0]}'});
+        %endfor
+      calypso.tlm.tiles[tileid].monitors['${monitor.get_name()}']=attrlist;
+      %endfor          
+     </script>
+          
+    
+  </div>
+
+
+

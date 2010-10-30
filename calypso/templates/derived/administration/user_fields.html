@@ -1,0 +1,28 @@
+% if c.user != '':
+${h.field( "Userid",
+      h.text(name='userid',value=c.user.userid),
+      required=True)}
+${h.field( "First Name",
+      h.text(name='firstname',value=c.user.firstname),
+      required=True)}
+${h.field( "Last Name",
+      h.text(name='lastname',value=c.user.lastname),
+      required=True)}
+${h.field( "email",
+      h.text(name="email",value=c.user.email),
+      required=False)}
+${h.hidden(name="olduserid",value=c.user.userid)}
+% else:
+${h.field( "Userid",
+      h.text(name='userid'),
+      required=True)}
+${h.field( "First Name",
+      h.text(name='firstname'),
+      required=True)}
+${h.field( "Last Name",
+      h.text(name='lastname'),
+      required=True)}
+${h.field( "email",
+      h.text(name="email"),
+      required=False)}
+% endif

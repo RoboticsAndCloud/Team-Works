@@ -1,0 +1,17 @@
+function ScenarioController(scenario){
+
+  this.loadurl = Routing.url_for(scenario,'load');
+  this.starturl = Routing.url_for(scenario,'start');
+  this.stopurl = Routing.url_for(scneario,'stop');
+  this.pauseurl = Routing.url_for(scenario,'pause');
+  this.resumeurl = Routing.url_for(scenario,'resume');
+
+  //constructor:load scenario
+  $.ajax({ url: loadurl,
+	     type: 'POST',
+	     error(text){
+	     alert('ERROR: ' + text);
+	   }
+	 });
+  
+}

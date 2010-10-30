@@ -1,0 +1,38 @@
+<div id='${c.formatview}' name='${c.formatview}' class='plot'>
+   <div id='chart${c.formatview}'>
+     <div id='fullchart${c.formatview}'>
+    </div>
+   </div> 
+  <script type="text/javascript" src="http://www.google.com/jsapi"></script>
+  <script type="text/javascript" src="/lib/tlm/plotview.js"></script>
+  <script type="text/javascript">
+    google.load("visualization", "1", {});
+    jQuery.noConflict();
+  </script>
+
+  <script type="text/javascript">
+    google.load("visualization", "1", {});
+  </script>
+  <script type="text/javascript" src="http://systemsbiology-visualizations.googlecode.com/svn/trunk/src/main/js/load.js"></script>
+  <script type="text/javascript" src="/lib/tlm/visualization.js"></script>
+  <script>
+     plotattrs=new Array();
+     plotattrs = {maxlength:${c.properties.timespan},ymin:${c.properties.ymin},
+        ymax : ${c.properties.ymax},
+        width : ${c.properties.width},
+        height : ${c.properties.height},
+        is3D : false};
+     plot${c.formatview} = new calypso.tlm.Gauge(document.getElementById('fullchart${c.formatview}'),'${c.formatview}',plotattrs);
+%for mon in c.monitors:
+%if len(mon.attrs())==1 and mon.attrs()[0]==mon.name:
+     plot${c.formatview}.addMonitor(new calypso.tlm.visualizationMonitor("${mon.name}"),"${mon.name}","${mon.name}","${mon.id}");
+%else:
+%for  attr in mon.attrs():
+     plot${c.formatview}.addMonitor(new calypso.tlm.visualizationMonitor("${mon.name}.${attr[0]}"),"${mon.name}","${attr[0]}","${mon.id}.${attr[1]}");
+%endfor
+%endif
+%endfor
+   if(${c.display.get_short_name().replace(' ','_')}_ts)
+     plot${c.formatview}.start(${c.display.get_short_name().replace(' ','_')}_ts);
+   </script>
+</div>

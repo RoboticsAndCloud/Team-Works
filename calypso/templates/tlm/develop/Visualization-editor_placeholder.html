@@ -1,0 +1,137 @@
+<html>
+<head>
+
+    <style type="text/css">
+    #feedback { font-size: 1.4em; }
+    #monitor_list .ui-selecting { background: #FECA40; }
+    #monitor_list .ui-selected { background: #F39814; color: white; }
+    #monitor_list_sortable { list-style-type: none; margin: 0; padding: 0; width: 60%; }
+    #monitor_list_sortable li { margin: 0 3px 3px 3px; padding: 0.4em; padding-left: 1.5em; font-size: 1.4em; height: 18px; }
+    #monitor_list_sortable li span { margin-left: -1.3em; }
+    
+    </style>
+   
+      <link rel="stylesheet" href="../../../public/css/goldenwheat/jquery-ui-1.8.4.custom.css" type="text/css" media="all" /> 
+     <link rel="stylesheet" href="../../../public/lib/farbtastic/farbtastic.css" type="text/css" media="all" /> 
+    
+    
+      <!-- JQuery : making javascript easy and almost fun ;-) -->
+      <script src="../../../public/lib/jquery-1.4.2.min.js" type="text/javascript"></script> 
+      <script src="../../../public/lib/jquery-ui-1.8.4.custom.min.js" type="text/javascript"></script> 
+      <script src="../../../public/lib/jquery.dropdown.js" type="text/javascript"></script>
+      <script src="../../../public/lib/tlm/init.js" type="text/javascript"></script>
+      <script src="../../../public/lib/tlm/tile_editor.js" type="text/javascript"></script>
+      <script type='text/javascript' src='http://www.google.com/jsapi'></script>
+      <script src="../../../public/lib/tlm/visualization.js" type="text/javascript"></script>
+      <script src="../../../public/lib/farbtastic/farbtastic.js" type="text/javascript"></script> 
+      <script>
+            google.load('visualization', '1', {packages:['gauge']});
+      </script>        
+</head>
+<body style='background:black' >
+
+  <style>
+.title{text-align:center;padding:0px;margin:0px}
+.title-content{text-align:center;padding:10px}
+.fixed-content{overflow:auto;height:100%;display:block}
+  </style>
+  <div id='main_tile_editor' style='height:80%;width:65%;z-index:100' class='ui-widget-content'>
+     <div class='title ui-widget'>
+        <h2 class='title-content ui-widget-header '>Tile Editor</h2>
+        <hr class='title'></hr>
+    </div>
+    <div class=''ui-widget-content' style='display:block;height:100%;width:100%;z-index:0'>
+        <div style='display:inline-block;height:80%;width:65%;z-index:0;padding:0;margin:0'>
+           <div id='tile_canvas' class='ui-widget-display'
+                title='Drag monitors to this blacnk canvas to append; drag them to the list below to insert into an existing list'
+                style='overflow:auto;height:60%;margin:0px;padding:0px'>
+           </div>
+           <h3 class='ui-widget-header' style='padding:0;margin:0'>Content & Properties 
+           <div style='float:right'>
+           <label>Display Type: </label>
+           <select id='plot_type_selection'>
+           </select>
+           </div>
+           </h3> 
+           <div id='tile_editor_tabs'  style='height:37%;margin:0px;padding:0px;border:2px solid black'>
+               <ul>
+                 <li><a href="#monitor_list_tab"><span>Monitor List</span></a></li>
+                 <li><a href="#props_tab"><span>Display Properties</span></a></li>
+               </ul>
+         
+               <div id='monitor_list_tab' style='height:75%'>
+                 <div id="monitor_list" class="fixed-content monitor_list monitor_list_expandable monitor_list_sortable">
+                
+                 </div>
+             
+              </div>
+              <div id='props_tab' class='ui-widget-content'  >
+                 <div style='display:inline-block;width:65%;height:70%;margin:0;padding:0'>
+                    <div  id='properties_ui' class='fixed-content' style='height:100%'>
+                    </div>
+                 </div>
+                 <div id='prop_candy'  style='width:35%;float:right;'>
+              
+                 </div>
+              
+              </div>
+      
+           </div>
+                   <div><h4 style='opacity:0.'>SPAC</h4></div>
+     
+        </div>
+        <div id='monitor_selection' class='ui-widget-content'
+            style='display:inline-block;height:80%;width:34%'>
+               <h2 class='ui-widget-header'>Monitor Selection List</h2>
+  
+              <div class='ui-widget-content monitor_list' id='monitor_list_all' style='display:block;height:70%;overflow:auto'>
+                
+              </div>
+              <div id='tile_description' class='ui-state-highlight' style='height:20%'>    
+                 
+      
+              </div>
+              <div><h4 style='opacity:0.'>SPAC</h4></div>
+        
+       </div>
+     
+             
+       
+           
+   </div>
+                 
+            <script>       
+  
+                   
+          $(document).ready(function() {
+                google.setOnLoadCallback(createEditor);
+          });
+
+          function createEditor(){
+              $('#tile_editor_tabs').tabs({ fx: { opacity: 'toggle' } });
+             
+             
+                calypso.tlm.tile_editor = new calypso.tlm.Tile_Editor( $('#monitor_list_all'),
+                        $('.monitor_list_sortable'),
+                         calypso.tlm.PieChartVisualization);
+                    $('#properties_ui').append(calypso.tlm.tile_editor.properties_interface());
+                    calypso.tlm.tile_editor.monitor_available( "Monitor1", ["attr1","attr2"]);
+                    calypso.tlm.tile_editor.monitor_available( "Monitor2", ["attr1"]);
+                    calypso.tlm.tile_editor.monitor_available( "Monitor3", ["attr1","attr2","attr3","attr4"]);
+                    calypso.tlm.tile_editor.monitor_available( "Monitor4", ["attr1","attr2"]);
+                    calypso.tlm.tile_editor.monitor_available( "Monitor5", ["attr1","attr2"]);
+
+                    $('#tile_editor_tabs').css('height',$('#tile_editor_tabs').height()+150);
+                    
+                   
+          };
+ 
+         for (item in calypso.tlm){     
+             if (item.lastIndexOf('Visualization')>0){
+                 name=item.substr(0,item.lastIndexOf('Visualization'));
+                 calypso.tlm[item].classname=item;
+                 $('#plot_type_selection').append($('<option id="'+item+'" value="'+item+'">'+name+'</option>'));
+             }             
+         }
+            </script>
+   </div>

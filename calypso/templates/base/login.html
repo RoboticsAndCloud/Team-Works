@@ -1,0 +1,32 @@
+## -*- coding: utf-8 -*-
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
+"http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+    <title>${self.title()}</title>
+    ${self.head()}
+</head>
+<body style='background:#140808'>
+    ${self.heading()}
+    <div valign='center' align='center' id='login'>
+
+${h.form_start(h.url_for(controller='login',action='login', id='loginform'), method="post")}
+   ${h.field("User Name", h.text(name='username'), required=True)}
+   ${h.field("Password", h.password(name='password'), required=True)}
+   ${h.field(field=h.submit(value="Login", name="login"))}
+   ${h.field(field=h.submit(value="Request_Account", name="Request Account"))}
+${h.form_end()}
+    </div>
+   ${self.footer()}
+</body>
+</html>
+
+<%def name="title()">Calypso</%def>
+<%def name="head()">
+<link rel='stylesheet' type='text/css' href='/css/Calypso.css' ></link>
+</%def>
+<%def name="heading()">
+<h1 align='center' style='color:tan'><img src='/logo.png' width='60' height='60' padding='20'></img>${c.heading or 'Calypso Login'}</h1>
+</%def>
+<%def name="footer()"></%def>

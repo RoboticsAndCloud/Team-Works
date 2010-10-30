@@ -1,0 +1,16 @@
+<table cellmargin='20pt' >
+  <thead>
+    <tr style='color:black;font-weight:bold;font-size:20px' align='center'><td colspan='2' >User</td><td colspan='2'>&nbsp; &nbsp;Action</td></tr>
+   <tr><td colspan='4'><hr/></td></tr>
+  </thaed>
+  <tbody>
+% for item in c.users:
+%  if item.userid!='admin':
+   <tr style='font-weight:bold;font-size:20px;color:tan'>
+     <td  colspan='2' style='padding:10pt'><a href='${h.url_for(controller='administration',action='edit_user',param=item.userid)}'>${item.lastname}, ${item.firstname}</a></td>
+     <td>&nbsp; &nbsp;<a href='${h.url_for(controller='administration',action='delete_user',userid=item.userid)}'>Delete</a></td>
+   </tr>
+%   endif
+% endfor
+  </tbody>
+</table>

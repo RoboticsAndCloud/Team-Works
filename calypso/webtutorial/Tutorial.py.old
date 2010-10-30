@@ -1,0 +1,57 @@
+import festival
+import calypso.config.routing
+import urllib
+import string
+import time
+
+from routes import Mapper
+from webhelpers.html.builder import literal
+
+class Tutorial:
+
+    class Item:
+
+        def __init__(self, id, text):
+            self.id=id
+            self.text = text
+            self.js = '$("#'+string.replace(id,' ','')+ \
+                      '").animate({fontSize:"24px",bgColor:"yellow"},1000,null,null);$("#speak")[0].src=\"/tutorial/tts/%s\";;'%urllib.quote(id)
+            self.ttsclient = festival.Festival()
+            
+        def speak(self):
+            print "SPEAKING " + self.text
+            return self.ttsclient.wave(self.text)
+
+    def __init__(self):
+        self.items = []
+        self.itemdict={}
+
+    def add(self,id, text):
+        item = Tutorial.Item(id, text)
+        self.items.append(item)
+        self.itemdict[id]=item
+        print "ADDING " + id + " WITH " + text + " JS: " + item.js
+        
+    def conduct(self):
+        yield "script"
+
+    def d(self):
+        print "BEGIN"
+        for item in self.items:
+            print item.js
+            yield item.js
+            time.sleep(3)
+        yield "</script>"
+        print "END"
+        
+    def speak(self, id):
+        return self.itemdict[id].speak()
+
+
+tutorial=Tutorial()
+
+def add(id, text):
+    tutorial.add(id,text)
+
+def conduct():
+    return tutorial.conduct()

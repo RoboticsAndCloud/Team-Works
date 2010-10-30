@@ -1,0 +1,52 @@
+<!-- SPACER --> 
+<div style='padding:0px;margin:0px;height:0px'>
+  <img src='/icons/${c.tile.model().get_type()}.png' style='visibility:hidden' width='${c.properties.Width()}' height='0px'/>
+</div>
+
+
+<div class='tile_draggable' id='${c.tile.get_name().replace(' ','_')}' x_pos="${c.x_pos}" tileclass='${c.tile._model.get_type()}' >
+
+
+<div align='center' class='tile_receiver' id='${c.tile.get_name().replace(' ','_')}_droppable' style='z-index:2;position:absolute;opacity=0.3;top:45%;display:none'  >
+  <img src='/icons/swap.png' title='Drop tile palette items here.'/>
+</div>
+
+
+      
+<div id='${c.tile.get_name().replace(' ','_')}_tile_operations' class='operation' style='z-index:4' >
+   <a title='Configure the display properties of this tile' 
+       href="javascript:show_hide_properties_dialog('${c.tile.get_name().replace(' ','_')}', 
+                                                    tile_controllers['${c.x_pos},${c.y_pos}'])" >
+        <img  class='popup_toggle_menu' id='${c.tile.get_name().replace(' ','_')}_propscfgr' src='/icons/properties.png'style='border:0'/>
+   </a>
+
+<!--   <a title='Add monitors to this tile'  class='popup_toggle_menu' id='${c.tile.get_name().replace(' ','_')}_monscfgr' 
+	 href="javascript:show_hide_monitors_dialog('${c.tile.get_name().replace(' ','_')}', 
+                                                     tile_controllers['${c.x_pos},${c.y_pos}'] );" >
+         <img   src='/icons/plus.png' style='border:0'/>
+   </a> -->
+
+   <a title='Remove this tile'  href="javascript:if (confirm('Really remove this tile and all its monitors?')) 
+                                      visualization_controller.remove_tile({x_pos:${c.x_pos}, y_pos:${c.y_pos}});"><img   src='/icons/removeX.png' style='border:0'/></a>
+
+
+ </div>
+
+
+<div  id='${c.tile.get_name().replace(' ','_')}_span_controller' class='operationbox' title='Change the column span of this cell; curently: ${c.properties.col_span()}' > 
+    <h3 class='tile_reducer' ><a style='text-decoration:none;color:black;' href="javascript:tile_controllers['${c.x_pos},${c.y_pos}'].reduce_tilecolspan();">&#9664;</a></h3>
+       <i style='font-size:70%'>span:${c.properties.col_span()}</i>
+    <h3 class='tile_expander'><a style='text-decoration:none;color:black;' href="javascript:tile_controllers['${c.x_pos},${c.y_pos}'].expand_tilecolspan();">&#9654;</a></h3>
+</div> 
+  
+  <script>
+    ${c.tile.get_name().replace(' ','_')}_position={x_pos:${c.x_pos}, y_pos:${c.y_pos}};
+    ${c.tile.get_name().replace(' ','_')}_droppable_position={x_pos:${c.x_pos}, y_pos:${c.y_pos}};
+    
+    ${c.tile.get_name()}_container_position={x_pos:${c.x_pos}, y_pos:${c.y_pos}};
+    receiver_${c.y_pos}_${c.x_pos}={x_pos:${c.x_pos}, y_pos:${c.y_pos}};
+    tile_controllers['${c.x_pos},${c.y_pos}'] = new Tile_Properties_Controller_Proxy('${c.tile.get_name()}', ${c.x_pos}, ${c.y_pos});
+
+  </script>
+
+</div>

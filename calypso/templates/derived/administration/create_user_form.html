@@ -1,0 +1,9 @@
+<%namespace file="user_fields.html" name="user_fields" import="*"/>
+
+    <h2 class="main">User Information</h2>
+
+${h.form_start(h.url_for(controller='administration', action='add_user'), method="post")}
+    ${user_fields.body()}
+</table>
+    ${h.submit(value="Create User", name='submit')}
+${h.form_end()}

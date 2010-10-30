@@ -1,0 +1,33 @@
+<%inherit file="/base/index.html"/>
+<p></p>
+<div align='center' style='align:center;width:60%;background-color:tan;padding:20pt'>
+<h3>Select a scenario to run</h3>
+<hr></hr>
+<table border='2'>
+  <thead>
+    <tr align='center'>
+       <td colspan='2'><b>Scenario</b></td>
+       <td><b>Action</b></td>
+    </tr>
+  </thead>
+  <tbody>
+%for scenario in c.scenariolist:
+   <td><img href='${h.url_for(controller='Scenario',action='img',scenario=scenario) }'></img></td>
+   <td>${scenario}</td>
+   <td>
+%if c.isactive[scenario]:
+<ul>
+<li><a href='${h.url_for(controller='Scenario', action='load')}/${scenario}/1'>Launch New</a></li>
+<li><a href='${h.url_for(controller='Scenario', action='connect')}/${scenario}/1}'>Connect to Existing Session</a></li>
+</ul>
+%else:
+<a href="javascript:document.location='${h.url_for(controller='Scenario', action='load',id=None)}/${scenario}/1'">Launch</a>
+%endif
+   </td>
+%endfor
+  </tbody>
+</table>
+</div>
+${c.content}
+<%def name="footer()">
+</%def>

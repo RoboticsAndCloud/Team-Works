@@ -1,0 +1,10 @@
+<%namespace file="user_fields.html" name="user_fields" import="*"/>
+
+    <h2 class="main">User Information</h2>
+
+${h.form_start(h.url_for(controller='administration', action='update_user_data'), method="get")}
+    ${user_fields.body()}
+</table>
+    ${h.submit(value="Update User Information", name='submit')}
+    ${h.submit(value='Reset Password',name="reset_password")}
+${h.form_end()}

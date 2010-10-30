@@ -1,0 +1,19 @@
+<div align='center'>
+<h1>List of All Users</h1>
+<table  cellspacing='10pt' style='background-color:tan;margin:100pt;padding:30pt'>
+  <thead>
+    <tr style='color:black;font-weight:bold;font-size:20px' align='center'><td colspan='2' >User</td><td colspan='2'>&nbsp; &nbsp;Action</td></tr>
+   <tr><td colspan='4'><hr/></td></tr>
+  </thaed>
+  <tbody>
+% for item in c.users:
+%  if item.userid!='admin':
+   <tr padding='15pt'>
+     <td  colspan='2' style='padding:5pt'><a href='${h.url_for(controller='administration',action='edit_user',userid=item.userid)}'>${item.lastname}, ${item.firstname}</a></td>
+     <td align='right'><a href='${h.url_for(controller='administration',action='delete_user',userid=item.userid)}'>Delete</a></td>
+   </tr>
+%   endif
+% endfor
+  </tbody>
+</table>
+</div>

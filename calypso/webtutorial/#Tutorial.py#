@@ -1,0 +1,27 @@
+
+from routes import Mapper
+from webhelpers.html.builder import literal
+
+class Tutorial:
+
+
+        
+    def conduct(self):
+        yield "script"
+        print "BEGIN"
+        for item in self.items:
+            print item.js
+            yield item.js
+            time.sleep(3)
+        yield "</script>"
+        print "END"
+        
+
+
+tutorial=Tutorial()
+
+def add(id, text):
+    tutorial.add(id,text)
+
+def conduct():
+    return tutorial.conduct()

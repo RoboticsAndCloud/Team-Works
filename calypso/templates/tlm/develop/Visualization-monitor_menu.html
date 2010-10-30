@@ -1,0 +1,43 @@
+<%def name="display_monitor_menu( tile )">
+%if len(tile.monitors())==0:
+<div>
+<p> This tile is empty.  To add monitors click the <img src='/icons/plus.png'> icon above</p>
+</div>
+
+%else:
+
+<div style='scroll:auto'>
+  <script>
+      function display_monitor(monitorname){
+	   if (!monitorname) monitorname=$('#monitor_selection')[0].value;
+	   data = {configuration:'${c.configuration}',
+	            scenario:'${c.scenario}',
+	            tab : $('.selectedtab')[0].id.replace('_tab',''),
+	            monitorname: monitorname};
+	  	document.body.style.cursor = 'progress';
+	 $.ajax({url:'/Visualization/monitor_menu',
+               data:(data),
+               error   : function(){alert("Failed to get monitor attribute menu"); document.body.style.cursor = 'auto';},
+               success : function(html){
+                 $('#monitor_selection_menu').html(html);
+                 visualization_controller.set_up_drag_and_drop();
+               }
+         });
+      }
+//      $(document).ready(function(){
+//      first_monitor='${h.Format.DEFAULT_FORMAT.sorted_monitors()[0].get_name()}';
+//      display_monitor(first_monitor);
+//      });
+  </script>
+  <select id='monitor_selection' onchange="javascript:display_monitor();" unuused="$('.attribute_display').css('display','none');selected=$('#monitor_selection')[0].value;$('#'+selected+'_details').css('display','block');">
+  %for monitor in h.Format.DEFAULT_FORMAT.sorted_monitors():
+       <option value='${monitor.name}'>${monitor.name}</option>
+  %endfor
+  </select>
+  
+  <div style='background-color:white;' id='monitor_selection_menu' >
+  </div>
+ 
+</div>
+%endif
+</%def>

@@ -1,0 +1,24 @@
+<div id='${c.formatview}' name='${c.formatview}' class='plot'>
+   <div id='chart${c.formatview}'>
+     <div id='fullchart${c.formatview}'>
+ 
+%for mon in c.monitors:
+%if len(mon.attrs())==1 and mon.attrs()[0]==mon.name:
+%else:
+    <tr id='heatmaprow_${mon.name}'><td></td>
+%for  attr in mon.attrs():
+    <td style='color:black' style='filter:flipv fliph;width:10em'>${attr[0]}</td>
+%endfor
+    </tr>
+    <tr id='heatmaprow_${mon.name}'><td>${mon.name}</td>
+%for  attr in mon.attrs():
+     <td id='heatmap_${mon.id}.${attr[1]}' style='color:black' width='10em'></td>
+%endfor
+   </tr>
+%endif
+%endfor
+
+    </div>
+   </div> 
+
+</div>
